@@ -783,7 +783,8 @@ return
 ;------------------------------------------------------------ G20 mouse launch Explorer / cycle Explorer tabs
 
 Ins:: 
-	p := Morse()																; change back to manual? why?
+	p := Morse()
+	run, "C:\Users\tomba\OneDrive\Desktop\AutoHotKey\accelerated scrolling alt.ahk"
 	If (p = "0"){
 		IfWinNotExist, ahk_class CabinetWClass 
 			Run, explorer.exe
@@ -825,9 +826,9 @@ Return
 
 ;------------------------------------------------------------ !G20 mouse launch Chrome / cycle Chrome tabs
 !Ins::
+	run, "C:\Users\tomba\OneDrive\Desktop\AutoHotKey\accelerated scrolling alt.ahk"
 IfWinNotExist, ahk_exe chrome.exe
 	Run, chrome.exe
-
 if WinActive("ahk_exe chrome.exe")
 	Sendinput ^{tab}
 else

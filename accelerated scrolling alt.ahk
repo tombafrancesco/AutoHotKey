@@ -117,3 +117,9 @@ return
 	if WinActive("ahk_exe Resolve.exe")
 	ExitApp
 return
+
+
+~f21::
+	keywait, f21, t.2
+	ExitApp
+return
