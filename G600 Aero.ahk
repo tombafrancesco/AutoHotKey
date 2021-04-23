@@ -868,7 +868,7 @@ return
 ;  ooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo
 ;  ooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo
 
-; o o o o o o o o o o o o o o o TWEAK BUTTON MODIFIER o o o o o o o o o o o o o o
+; o o o o o o o o o o o o o o o TWEAK BUTTON MODIFIER o o o o o o o o o o o o o o o
 
 Scrolllock::
 	if WinActive("ahk_exe chrome.exe") 
