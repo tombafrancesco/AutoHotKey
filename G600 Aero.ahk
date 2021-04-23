@@ -22,7 +22,7 @@ renrulery:=780
 Coordmode pixel screen
 coordmode mouse screen
 calibratepix:={mediax:700,mediay:1140,cutx:820,editx:940,fusionx:1060,colorx:1180,fairlightx:1300,renderx:1420}                      									
-kf:= {edx:1990, edy:178, cox:1000, coy:10, fux:1000, fuy:10, fax:1000, fay:10, rex:1000, rey:10}
+kf:= {edx:1990, edy:178, cox:1000, coy:10, fux:1000, fuy:10, fax:1000, fay:10, rex:1000, rey:10}				;keyframe buttons
 
 
 ; o o o o o o o o o o o o o o o FUNCTIONS o o o o o o o o o o o o o o o o 
@@ -204,6 +204,9 @@ $AppsKey::
 	if WinActive("ahk_exe resolve.exe") {
 		If (p = "0") {														; single
 			winactivate davinci
+			scrollmod := 0
+			heldf1:=0
+			tooltip
 			page := pagecheck(calibratepix)
 			if (page = "") 
 				gosub overkill
@@ -228,7 +231,7 @@ $AppsKey::
 	else 
 		If (p = "0") 	{
 			tooltip,,,,2
-			send {appskey}
+			; send {appskey}
 			}
 		Else  																
 			run, C:\Program Files\AutoHotkey\WindowSpy.ahk
@@ -284,6 +287,8 @@ gui, add, text, y+2, % "color:	     " kf.cox "	" kf.coy
 gui, add, text, y+2, % "fairlight:	     " kf.fax "	" kf.fay
 gui, add, text, y+2, % "render:	     " kf.rex "	" kf.rey
 gui +LastFound +OwnDialogs +AlwaysOnTop
+
+
 return
 
 
@@ -698,6 +703,10 @@ $!rwin::
 	keywait rwin
 Return
 
+^rwin::
+	send !{f4}
+return
+
 #if wheelarrow
 
 !wheelup::
@@ -784,7 +793,9 @@ return
 
 Ins:: 
 	p := Morse()
-	run, "C:\Users\tomba\OneDrive\Desktop\AutoHotKey\accelerated scrolling alt.ahk"
+	DetectHiddenWindows On  ; Allows a script's hidden main window to be detected.
+	SetTitleMatchMode 2  ; Avoids the need to specify the full path of the file below.
+	PostMessage, 0x0111, 65303,,, fastscroll.ahk - AutoHotkey
 	If (p = "0"){
 		IfWinNotExist, ahk_class CabinetWClass 
 			Run, explorer.exe
@@ -826,7 +837,9 @@ Return
 
 ;------------------------------------------------------------ !G20 mouse launch Chrome / cycle Chrome tabs
 !Ins::
-	run, "C:\Users\tomba\OneDrive\Desktop\AutoHotKey\accelerated scrolling alt.ahk"
+	DetectHiddenWindows On  ; Allows a script's hidden main window to be detected.
+	SetTitleMatchMode 2  ; Avoids the need to specify the full path of the file below.
+	PostMessage, 0x0111, 65303,,, fastscroll.ahk - AutoHotkey
 IfWinNotExist, ahk_exe chrome.exe
 	Run, chrome.exe
 if WinActive("ahk_exe chrome.exe")
@@ -860,7 +873,9 @@ Return
 
 ~^!0:: 
 	if !WinActive("ahk_exe Resolve.exe")
-	run, "C:\Users\tomba\OneDrive\Desktop\AutoHotKey\accelerated scrolling alt.ahk"
+	DetectHiddenWindows On  ; Allows a script's hidden main window to be detected.
+	SetTitleMatchMode 2  ; Avoids the need to specify the full path of the file below.
+	PostMessage, 0x0111, 65303,,, fastscroll.ahk - AutoHotkey
 return
 
 

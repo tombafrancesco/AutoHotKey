@@ -1,18 +1,10 @@
-; Accelerated Scrolling
-; V1.3
-; By BoffinbraiN
-;His .exe was sketchy so here is just the bare .ahk code.
-
 #NoEnv
-;#NoTrayIcon
-#SingleInstance
 #MaxHotkeysPerInterval 120
-
+#SingleInstance force
 
 Process, Priority, , H
 SendMode Input
 
-#SingleInstance force
 
 
 
@@ -106,20 +98,32 @@ QuickToolTip(text, delay)
 	return
 }
 
+~f1 & wheelup::
+~f1 & wheeldown::
+return
+
 #if 
+
+~f1::
+	Suspend
+return
+
+~f1 up::
+	Reload
+return
 
 ~^!0:: 
 	if WinActive("ahk_exe Resolve.exe")
-	ExitApp
+	Suspend
 return
 
 ~f20::
 	if WinActive("ahk_exe Resolve.exe")
-	ExitApp
+	Suspend
 return
 
 
 ~f21::
 	keywait, f21, t.2
-	ExitApp
+	Suspend
 return
