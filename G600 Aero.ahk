@@ -23,6 +23,26 @@ Coordmode pixel screen
 coordmode mouse screen
 calibratepix:={mediax:700,mediay:1140,cutx:820,editx:940,fusionx:1060,colorx:1180,fairlightx:1300,renderx:1420}                      									
 kf:= {edx:1990, edy:178, cox:1000, coy:10, fux:1000, fuy:10, fax:1000, fay:10, rex:1000, rey:10}				;keyframe buttons
+scrollmod := 0
+heldf1:=0
+heldf20:=0
+pagescroll:=0
+wheelarrow:=0
+undoscroll:=0
+highlight:=0
+xfastscroll:=0
+		
+		
+		
+		;FASTSCROLL:
+timeout := 600												; length of a scrolling session. time to accumulate boost. Default: 500. Recommended 400 - 1000.
+boost := 30													; add boost factor. the higher the value, the slower to activate, and accumulate. disabled:0 Default: 20.															
+limit := 60													; maximum number of scrolls sent per click, so doesn't overwhelm (ie max velocity) Default: 60.
+distance := 0												; Runtime variables. Do not modify.
+vmax := 1
+
+
+
 
 
 ; o o o o o o o o o o o o o o o FUNCTIONS o o o o o o o o o o o o o o o o 
@@ -177,6 +197,9 @@ cursing:
     }
 Return
 
+;ooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo
+;ooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo
+
 
 ; o o o o o o o o o o o o o o o KEYBOARD STUFF o o o o o o o o o o o o o o o o o o o o o
 
@@ -238,7 +261,7 @@ $AppsKey::
 			
 Return
 
-
+; o o o o o o o o o o o o o o o o o o o VAR GUI o o o o o o o o o o o o o o o o o o o o
 
 !AppsKey::
 
@@ -248,7 +271,7 @@ Return
 
 gui +LastFound +OwnDialogs +AlwaysOnTop
 Gui, new, ,VAR																			;
-gui, show, w274 h340 ,																	; makes gui exist + size, if wanna add position, can add x y before size
+gui, show, w274 h370 ,																	; makes gui exist + size, if wanna add position, can add x y before size
 gui, color, 292928,																		; background
 gui, font, cBABABA																		; overall font style, cHEX color
 gui, add, text, x10 y10, % "page calibration:"
@@ -279,44 +302,140 @@ gui, font, w600
 gui, add, text, x10 y170, % "keyframe:	" keyframe.x "	" keyframe.y
 gui, font, w400
 Gui, Add, GroupBox,  y+6 w120 h130, keyframe buttons
-gui, add, text, x20 y210, % "media:	     "
-gui, add, text, y+2, % "cut:	     "
+gui, add, text, x20 y210, % "media:	    	- "
+gui, add, text, y+2, % "cut:	    	- "
 gui, add, text, y+2, % "edit:	     " kf.edx "	" kf.edy	
 gui, add, text, y+2, % "fusion:	     " kf.fux "	" kf.fuy
 gui, add, text, y+2, % "color:	     " kf.cox "	" kf.coy
 gui, add, text, y+2, % "fairlight:	     " kf.fax "	" kf.fay
 gui, add, text, y+2, % "render:	     " kf.rex "	" kf.rey
+gui, add, text, x152 y180, % "scrollmod: " scrollmod
+gui, add, text, y+2, % "heldf1: " heldf1
+gui, add, text, y+2, % "cursed: " cursed
+gui, add, text, y+2, % "heldf20: " heldf20
+gui, add, text, y+2, % "pagescroll: " pagescroll
+gui, add, text, y+2, % "wheelarrow: " wheelarrow
+gui, add, text, y+2, % "undoscroll: " undoscroll
+gui, add, text, y+2, % "highlight: " highlight
+gui, add, text, y+2, % "distance: " distance 											
+gui, add, text, y+2, % "vmax: " vmax 
+; gui, add, text, y+2, % timeout 											
+; gui, add, text, y+2, % boost 																									
+; gui, add, text, y+2, % limit 												
+
+
 gui +LastFound +OwnDialogs +AlwaysOnTop
 
 
 return
 
 
+; o o o o o o o o o o o o o o o o o o o FASTSCROLL o o o o o o o o o o o o o o o o o o o o
+#if !WinActive("ahk_exe Resolve.exe")
 
+Process, Priority, , H
+
+WheelUp::  
+	if (cursed=0 && scrollmod=0 && heldf1=0 && heldf20=0 && pagescroll=0 && wheelarrow=0 && undoscroll=0 && cursed=0)
+		Goto Scroll
+	else 
+		Send {wheelup}
+return
+  
+WheelDown::  
+	if (cursed=0 && scrollmod=0 && heldf1=0 && heldf20=0 && pagescroll=0 && wheelarrow=0 && undoscroll=0 && cursed=0)
+		Goto Scroll
+	else 
+		Send {wheeldown}
+return
+
+Scroll:
+	if (xfastscroll=0) {
+		t := A_TimeSincePriorHotkey
+		if (A_PriorHotkey = A_ThisHotkey && t < timeout) {
+			distance++													; Remember how many times we've scrolled in the current direction
+			v := (t < 80 && t > 1) ? (250.0 / t) - 1 : 1				; Calculate acceleration factor using a 1/x curve
+			if (boost > 1 && distance > boost) {						; Apply boost
+				if (v > vmax)											; Hold onto the highest speed we've achieved during this boost
+					vmax := v
+				else
+					v := vmax
+				v *= distance / boost
+				}
+			v := (v > 1) ? ((v > limit) ? limit : Floor(v)) : 1			; Validate
+
+			MouseClick, %A_ThisHotkey%, , , v
+			}
+		else  {
+			distance := 0												; Combo broken, so reset session variables
+			vmax := 1
+			MouseClick %A_ThisHotkey%
+			}
+		}
+	else  {
+	distance := 0												; Combo broken, so reset session variables
+	vmax := 1
+	MouseClick %A_ThisHotkey%
+	}
+return
+
++^0::
+	keywait, 0, t.3
+	if errorlevel {												; reset fastscroll
+		scrollmod=:0
+		heldf1:=0
+		heldf20:=0
+		pagescroll:=0
+		wheelarrow:=0
+		undoscroll:=0
+		cursed:=0
+		distance:=0												; Runtime variable
+		vmax:= 1												; Runtime variable
+		t:=0
+		v:=0
+		xfastscroll:=0
+		tooltip RESET
+		}
+	else{
+		xfastscroll:=(xfastscroll-1)**2									; pause unpause
+		if (xfastscroll=1)
+			tooltip ■												
+		else 
+			tooltip ▶													;play ►
+			}
+	sleep 500
+	tooltip
+return
+
+
+
+
+
+#if
 
 
 ;ooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo
 ;ooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo
-;ooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo
 
 
 
 
-;------------------------------------------------------------							| x  888 888 888
-;------------------------------------------------------------							| x  888 888 888
-;------------------------------------------------------------							| x  888 888 888
-;------------------------------------------------------------							| x  888 888 888
+
+
+;------------------------------------------------------------						|  x  888 888 888
+;------------------------------------------------------------						|  x  888 888 888
+;------------------------------------------------------------						|  x  888 888 888
+;------------------------------------------------------------						|  x  888 888 888
 
 
 
-;------------------------------------------------------------ g9 mouse: opens new tab in chrome, new sheet in Notepad++ 
+;------------------------------------------------------------ g9 mouse: new tab in chrome, new sheet in Notepad++ 
 ;------------------------------------------------------------ double press for Razor blade tool
 
 
 
 $f1::
 	if WinActive("ahk_exe chrome.exe") {
-		keywait f1	;don't open a million tabs
 		Sendinput ^t
 		}
 	else if WinActive("ahk_exe resolve.exe") {
@@ -340,7 +459,8 @@ $f1::
 				Send {lbutton down}
 				heldf1 := 1
 				scrollmod := 1
-				tooltip ◀ ◈ ▶ 						; ◀ ◈ ▶  or  ◀ ◆ ▶  
+				mousegetpos x,y
+				tooltip ◀ ◈ ▶, x-24, y+12				; ◀ ◈ ▶  or  ◀ ◆ ▶  
 				}
 		keywait f1
 		}
@@ -382,6 +502,7 @@ f1 & WheelDown::
 Return
 
 #if
+
 
 
 ;------------------------------------------------------------ !g9 mouse: cycle back tab 
@@ -478,7 +599,7 @@ $f21::
 				Run, C:\Program Files\Blackmagic Design\DaVinci Resolve\Resolve.exe
 			else
 				WinActivate ahk_exe Resolve.exe
-				held21:=2
+				heldf21:=2
 			}
 		else
 			send ^f
@@ -504,7 +625,7 @@ f21 up::
 		Send {f1}
 		heldf21:=0
 		}
-	else if (held21=2) {
+	else if (heldf21=2) {
 		sleep 300
 		heldf21:=0
 		}
@@ -524,10 +645,10 @@ $!f21::
 Return
 
 
-;------------------------------------------------------------							888  x  888 888
-;------------------------------------------------------------							888  x  888 888
-;------------------------------------------------------------							888  x  888 888
-;------------------------------------------------------------							888  x  888 888
+;------------------------------------------------------------						888  x  888 888
+;------------------------------------------------------------						888  x  888 888
+;------------------------------------------------------------						888  x  888 888
+;------------------------------------------------------------						888  x  888 888
 
 
 
@@ -550,11 +671,11 @@ Return
 
 ;------------------------------------------------------------ !G12 add keyframe
 $!f22::
-		MouseGetPos, xpos, ypos							
-		keyframe := keyframe(page, kf.edx, kf.edy, kf.cox, kf.coy, kf.fux, kf.fuy, kf.fax, kf.fay, kf.rex, kf.rey)
-		 DllCall("SetCursorPos", "int", keyframe.x, "int", keyframe.y ) 				
-		 click
-		 DllCall("SetCursorPos", "int", xpos, "int", ypos) 
+	MouseGetPos, xpos, ypos							
+	keyframe := keyframe(page, kf.edx, kf.edy, kf.cox, kf.coy, kf.fux, kf.fuy, kf.fax, kf.fay, kf.rex, kf.rey)
+	 DllCall("SetCursorPos", "int", keyframe.x, "int", keyframe.y ) 				
+	 click
+	 DllCall("SetCursorPos", "int", xpos, "int", ypos) 
 Return
 
 ;------------------------------------------------------------- fix keyframe button position
@@ -624,10 +745,10 @@ $!f24::
 Return
 
 
-;------------------------------------------------------------							888 888  x  888
-;------------------------------------------------------------							888 888  x  888
-;------------------------------------------------------------							888 888  x  888
-;------------------------------------------------------------							888 888  x  888
+;------------------------------------------------------------						888 888  x  888
+;------------------------------------------------------------						888 888  x  888
+;------------------------------------------------------------						888 888  x  888
+;------------------------------------------------------------						888 888  x  888
 
 
 ;------------------------------------------------------------ G15:ctrl
@@ -647,12 +768,12 @@ Return
 ^Ralt::
 	if !WinActive("ahk_exe Resolve.exe") {
 	send {ralt down}
-	fastscroll:=true
+	pagescroll:=true
 	tooltip ▲`n▼
 	}
 Return
 
-#if fastscroll
+#if pagescroll
 
 ^!WheelUp::
 		Send {pgup}
@@ -665,7 +786,7 @@ Return
 
 ^Ralt up::
 	send {ralt up}
-	fastscroll:=false
+	pagescroll:=false
 	tooltip
 Return
 
@@ -675,10 +796,11 @@ Return
 
 
 
-;------------------------------------------------------------							888 888 888  x
-;------------------------------------------------------------							888 888 888  x
-;------------------------------------------------------------							888 888 888  x
-;------------------------------------------------------------							888 888 888  x
+;------------------------------------------------------------						888 888 888  x   |
+;------------------------------------------------------------						888 888 888  x   |
+;------------------------------------------------------------						888 888 888  x   |
+;------------------------------------------------------------						888 888 888  x   |
+
 
 
 ;------------------------------------------------------------ G18: click:start; long click:show desktop
@@ -734,7 +856,7 @@ return
 
 
 >^c::
-	keywait, c, t.25 
+	keywait, c, t.2 
 	if errorlevel {
 		undoscroll:=true
 		cursed:=1
@@ -775,15 +897,15 @@ return
 >^c up::
 	tooltip
 	undoscroll:=false
-	cursed:=0
 	gosub cursing
+	cursed:=0
 return
 
 lbutton::
 	tooltip
 	undoscroll:=false
-	cursed:=0
 	gosub cursing
+	cursed:=0
 return
 
 #if
@@ -793,9 +915,9 @@ return
 
 Ins:: 
 	p := Morse()
-	DetectHiddenWindows On  ; Allows a script's hidden main window to be detected.
-	SetTitleMatchMode 2  ; Avoids the need to specify the full path of the file below.
-	PostMessage, 0x0111, 65303,,, fastscroll.ahk - AutoHotkey
+	; DetectHiddenWindows On  ; Allows a script's hidden main window to be detected.
+	; SetTitleMatchMode 2  ; Avoids the need to specify the full path of the file below.
+	; PostMessage, 0x0111, 65303,,, fastscroll.ahk - AutoHotkey
 	If (p = "0"){
 		IfWinNotExist, ahk_class CabinetWClass 
 			Run, explorer.exe
@@ -837,47 +959,43 @@ Return
 
 ;------------------------------------------------------------ !G20 mouse launch Chrome / cycle Chrome tabs
 !Ins::
-	DetectHiddenWindows On  ; Allows a script's hidden main window to be detected.
-	SetTitleMatchMode 2  ; Avoids the need to specify the full path of the file below.
-	PostMessage, 0x0111, 65303,,, fastscroll.ahk - AutoHotkey
-IfWinNotExist, ahk_exe chrome.exe
-	Run, chrome.exe
-if WinActive("ahk_exe chrome.exe")
-	Sendinput ^{tab}
-else
-	WinActivate ahk_exe chrome.exe
+	; DetectHiddenWindows On  ; Allows a script's hidden main window to be detected.
+	; SetTitleMatchMode 2  ; Avoids the need to specify the full path of the file below.
+	; PostMessage, 0x0111, 65303,,, fastscroll.ahk - AutoHotkey
+	IfWinNotExist, ahk_exe chrome.exe
+		Run, chrome.exe
+	if WinActive("ahk_exe chrome.exe")
+		Sendinput ^{tab}
+	else
+		WinActivate ahk_exe chrome.exe
 Return
 
 
 
-;------------------------------------------------------------							88888888
-;------------------------------------------------------------							88    88
-;------------------------------------------------------------							88    88
-;------------------------------------------------------------							88888888
+;------------------------------------------------------------							888°888888
+;------------------------------------------------------------							888   °888
+;------------------------------------------------------------							888   .o88
+;------------------------------------------------------------							888.o88888
 
-;---------------------------------------------------------- mouse wheel
+;---------------------------------------------------------- mouse wheel L,R
 $home::
-if WinActive("ahk_exe Spotify.exe") 						; CAN I USE WINEXIST AND MEDIA BUTTONS???? OTHERWISE KINDA USELESS
-	Sendinput ^{left}
+if !WinActive("ahk_exe resolve.exe") 						
+	Sendinput {Media_Prev}
 else 
 	Send {home}
 Return
 	
 $end::
-if WinActive("ahk_exe Spotify.exe")
-	Sendinput ^{right}
+if !WinActive("ahk_exe resolve.exe")
+	Sendinput {Media_Next}
 else 
 	Send {end}
 Return	
 
 
-~^!0:: 
-	if !WinActive("ahk_exe Resolve.exe")
-	DetectHiddenWindows On  ; Allows a script's hidden main window to be detected.
-	SetTitleMatchMode 2  ; Avoids the need to specify the full path of the file below.
-	PostMessage, 0x0111, 65303,,, fastscroll.ahk - AutoHotkey
+<!<^0::
+	sendinput {Media_Play_Pause}
 return
-
 
 
 ;  ooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo
@@ -1109,6 +1227,9 @@ $!WheelUp::
 		Sendinput !{WheelUp}
 Return
 
+
+
+
 ; o o o o o o o o o o o o o o o o o o o CALIBRATE PIXPICKER o o o o o o o o o o o o o o o o 
 
 #if pixpicker
@@ -1224,9 +1345,4 @@ tooltip
 return
 
 #if
-
-
-
-
-
 

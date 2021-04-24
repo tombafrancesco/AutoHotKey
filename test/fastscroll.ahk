@@ -109,6 +109,7 @@ return
 return
 
 ~f1 up::
+	if !WinActive("ahk_exe Resolve.exe")
 	Reload
 return
 
