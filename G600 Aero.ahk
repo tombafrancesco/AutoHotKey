@@ -7,39 +7,37 @@ SetWorkingDir %A_ScriptDir%  ; Ensures a consistent starting directory.
 #SingleInstance Force
 
 ; o o o o o o o o o o o o o o o INITIAL VALUE VARIABLES o o o o o o o o o o o o o o o o 
-
-davinci:= "DaVinci Resolve by Blackmagic Design - 17.1.0 ahk_class Qt5QWindow"
-pixpicker := false
-i:=0
-cursed:=0
-rulery:=140
-colrulerx:=600
-colrulery:=652
-fusrulerx:=770
-fusrulery:=480
-fairrulery:=160
-renrulery:=780
 Coordmode pixel screen
 coordmode mouse screen
-calibratepix:={mediax:700,mediay:1140,cutx:820,editx:940,fusionx:1060,colorx:1180,fairlightx:1300,renderx:1420}                      									
-kf:= {edx:1990, edy:178, cox:1000, coy:10, fux:1000, fuy:10, fax:1000, fay:10, rex:1000, rey:10}				;keyframe buttons
-scrollmod := 0
-heldf1:=0
-heldf20:=0
-pagescroll:=0
-wheelarrow:=0
-undoscroll:=0
-highlight:=0
-xfastscroll:=0
+
+
+davinci:= "DaVinci Resolve by Blackmagic Design - 17.1.0 ahk_class Qt5QWindow"
+
+
+ruler  :=  {edx:0, 	edy:140, cox:600, coy:652, fux:770, fuy:480, fay:0, fay:160, rex:0, rey:780}						;ruler pos
+kf     :=  {edx:1990, edy:178, cox:1000, coy:10, fux:1000, fuy:10, fax:1000, fay:10, rex:1000, rey:10}					;keyframe buttons
+calpix :=  {mex:700, mey:1140, cutx:820, edx:940, fux:1060, cox:1180, fax:1300, rex:1420} 								;calibrate buttons                  									
+
+
+cal := 			0											;calibrate - appskey, !f1
+pixpicker := 	0											;calibrate - appskey
+cursed := 		0											;cursor, g19
+scrollmod := 	0											;g7, tweak button modifier
+heldf1 := 		0											;timeline ruler
+heldf20 :=		0											;switch davinci page
+pagescroll :=	0											;!g17 pgup pgdn scroll
+wheelarrow :=	0											;!g18 scroll windows
+undoscroll :=	0											;g19 undo-redo scroll
+highlight :=	0											;g13 color page
+xfastscroll :=	0											;pause fastscroll
 		
-		
-		
+
 		;FASTSCROLL:
-timeout := 600												; length of a scrolling session. time to accumulate boost. Default: 500. Recommended 400 - 1000.
-boost := 30													; add boost factor. the higher the value, the slower to activate, and accumulate. disabled:0 Default: 20.															
-limit := 60													; maximum number of scrolls sent per click, so doesn't overwhelm (ie max velocity) Default: 60.
+timeout := 	600												; length of a scrolling session. time to accumulate boost. Default: 500. Recommended 400 - 1000.
+boost := 	30												; add boost factor. the higher the value, the slower to activate, and accumulate. disabled:0 Default: 20.															
+limit := 	60												; maximum number of scrolls sent per click, so doesn't overwhelm (ie max velocity) Default: 60.
 distance := 0												; Runtime variables. Do not modify.
-vmax := 1
+vmax := 	1
 
 
 
@@ -65,28 +63,28 @@ Morse(timeout = 250) {
 
 pagecheck(x) {
 	Coordmode pixel screen																	
-	pixelgetcolor, editbutt, x.editx, x.mediay
-	pixelgetcolor, cutbutt, x.cutx, x.mediay
+	pixelgetcolor, editbutt, x.edx, x.mey
+	pixelgetcolor, cutbutt, x.cutx, x.mey
 	if (editbutt="0x000000" || cutbutt="0x000000")
 		pagevar := "edit"
 	else {
-		pixelgetcolor, colorbutt, x.colorx, x.mediay
+		pixelgetcolor, colorbutt, x.cox, x.mey
 		if (colorbutt="0x000000")
 			pagevar := "color"
 		else {
-			pixelgetcolor, fusionbutt, x.fusionx, x.mediay
+			pixelgetcolor, fusionbutt, x.fux, x.mey
 			if (fusionbutt="0x000000")
 			pagevar := "fusion"
 			else {
-				pixelgetcolor, fairlightbutt, x.fairlightx, x.mediay
+				pixelgetcolor, fairlightbutt, x.fax, x.mey
 				if (fairlightbutt="0x000000")
 				pagevar := "fairlight"
 				else {
-					pixelgetcolor, mediabutt, x.mediax, x.mediay
+					pixelgetcolor, mediabutt, x.mex, x.mey
 					if (mediabutt="0x000000")
 					pagevar := "media"
 					else {
-						pixelgetcolor, renderbutt, x.renderx, x.mediay
+						pixelgetcolor, renderbutt, x.rex, x.mey
 						if (renderbutt="0x000000")
 						pagevar := "render"
 						}
@@ -94,7 +92,7 @@ pagecheck(x) {
 				}
 			}
 		}
-	tooltip % pagevar, x.fusionx-50, 1,2
+	tooltip % pagevar, x.fux-50, 1,2
 	return pagevar
 }
 
@@ -135,14 +133,14 @@ overkill:													;sometimes pagecheck fails. this should fix problem 99%.
 	if WinActive("ahk_exe resolve.exe") {
 	DllCall("SetCursorPos", "int", 1860, "int", 14) 
 	mouseclick
-	page := pagecheck(calibratepix)
+	page := pagecheck(calpix)
 	if (page = "") {
 		DllCall("SetCursorPos", "int", 1860, "int", 14) 
 		mouseclick
 		sleep 20
 		DllCall("SetCursorPos", "int", 300, "int", 1140) 
 		mouseclick
-		page := pagecheck(calibratepix)
+		page := pagecheck(calpix)
 		if (page = "") {
 			winactivate davinci
 			sleep 50
@@ -151,11 +149,11 @@ overkill:													;sometimes pagecheck fails. this should fix problem 99%.
 			sleep 50
 			DllCall("SetCursorPos", "int", 300, "int", 1140) 
 			mouseclick
-			page := pagecheck(calibratepix)
+			page := pagecheck(calpix)
 			}
 		}
 	mousemove 1000,500
-	tooltip % page, calibratepix.fusionx-50, 1,2
+	tooltip % page, calpix.fux-50, 1,2
 	if (page = "")
 		msgbox problem
 	}
@@ -167,15 +165,15 @@ movetoruler:
 	Coordmode mouse screen
 	Mousegetpos skipx, skipy
 	if (page="edit")
-		Mousemove skipx, rulery
+		Mousemove skipx, ruler.edy
 	else if (page="color") 
-		Mousemove colrulerx, colrulery	
+		Mousemove ruler.cox, ruler.coy	
 	else if (page="fusion")
-		Mousemove fusrulerx, fusrulery	
+		Mousemove ruler.fux, ruler.fuy	
 	else if (page="fairlight")
-		Mousemove skipx, fairrulery	
+		Mousemove skipx, ruler.fay	
 	else if (page="render")
-		Mousemove skipx, renrulery
+		Mousemove skipx, ruler.fuy
 Return		
 
 cursing:
@@ -230,19 +228,19 @@ $AppsKey::
 			scrollmod := 0
 			heldf1:=0
 			tooltip
-			page := pagecheck(calibratepix)
+			page := pagecheck(calpix)
 			if (page = "") 
 				gosub overkill
 			}
 		Else If (p = "00") { 												; double press
-			page := pagecheck(calibratepix)
+			page := pagecheck(calpix)
 			if WinActive("Secondary Screen")
 				gosub overkill
 			coordmode mouse screen
 			mousegetpos startx, starty
-			mousemove calibratepix.mediax, calibratepix.mediay
+			mousemove calpix.mex, calpix.mey
 			pixpicker := true
-			tooltip, -- MEDIA -- , calibratepix.mediax-80, calibratepix.mediay-50
+			tooltip, -- MEDIA -- , calpix.mex-80, calpix.mey-50
 			}
 		Else If (p = "01") { 												; short long
 			reload, C:\Users\tomba\OneDrive\Desktop\AutoHotKey\G600_Aero.ahk
@@ -261,13 +259,20 @@ $AppsKey::
 			
 Return
 
+*AppsKey::																			;almost certainly doesn't work. supposed to kill glitchbug
+sleep 1000
+Send {ctrl up}{shift up}{rwin up}{lwin up}{ralt up}{lalt up}
+return
+
 ; o o o o o o o o o o o o o o o o o o o VAR GUI o o o o o o o o o o o o o o o o o o o o
+
 
 !AppsKey::
 
-	rule:= yvalruler(page,rulery,colrulery,fusrulery,fairrulery,renrulery)
+	rule:= yvalruler(page, ruler.edy, ruler.coy, ruler.fuy, ruler.fay, ruler.rey)
 	
 	keyframe := keyframe(page, kf.edx, kf.edy, kf.cox, kf.coy, kf.fux, kf.fuy, kf.fax, kf.fay, kfrex, kf.rey)
+
 
 gui +LastFound +OwnDialogs +AlwaysOnTop
 Gui, new, ,VAR																			;
@@ -282,22 +287,22 @@ gui, add, text, x150 y10, % "ruler y val:"
 gui, font, w600
 gui, add, text, x230 y10, % rule
 gui, font, w400
-Gui, Add, GroupBox, x10 y+6 w120 h130, calibratepix												; adds box 
-gui, add, text, x20 y46, % "media:	 " calibratepix.mediax " 	" calibratepix.mediay		; first line of text at x,y
-gui, add, text, y+2, % "cut:	 " calibratepix.cutx									
-gui, add, text, y+2, % "edit:	 " calibratepix.editx 									
-gui, add, text, y+2, % "fusion:	" calibratepix.fusionx
-gui, add, text, y+2, % "color:	" calibratepix.colorx
-gui, add, text, y+2, % "fairlight:	" calibratepix.fairlightx
-gui, add, text, y+2, % "render:	" calibratepix.renderx " 	" calibratepix.mediay
+Gui, Add, GroupBox, x10 y+6 w120 h130, calpix												; adds box 
+gui, add, text, x20 y46, % "media:	 " calpix.mex " 	" calpix.mey		; first line of text at x,y
+gui, add, text, y+2, % "cut:	 " calpix.cutx									
+gui, add, text, y+2, % "edit:	 " calpix.edx 									
+gui, add, text, y+2, % "fusion:	" calpix.fux
+gui, add, text, y+2, % "color:	" calpix.cox
+gui, add, text, y+2, % "fairlight:	" calpix.fax
+gui, add, text, y+2, % "render:	" calpix.rex " 	" calpix.mey
 Gui, Add, GroupBox, x+20 y29 w120 h130, rulers
 gui, add, text, x152 y46, % "media:	 	  -" 		
 gui, add, text, y+2, % "cut:	 	  -" 							
-gui, add, text, y+2, % "edit:		" rulery							
-gui, add, text, y+2, % "fusion:	     " fusrulerx "	"fusrulery
-gui, add, text, y+2, % "color:	     " colrulerx "	"colrulery
-gui, add, text, y+2, % "fairlight:		" fairrulery 
-gui, add, text, y+2, % "render:		" renrulery
+gui, add, text, y+2, % "edit:		" ruler.edy							
+gui, add, text, y+2, % "fusion:	     " ruler.fux "	"ruler.fuy
+gui, add, text, y+2, % "color:	     " ruler.cox "	"ruler.coy
+gui, add, text, y+2, % "fairlight:		" ruler.fay
+gui, add, text, y+2, % "render:		" ruler.rey
 gui, font, w600
 gui, add, text, x10 y170, % "keyframe:	" keyframe.x "	" keyframe.y
 gui, font, w400
@@ -447,20 +452,20 @@ $f1::
 				if WinActive("Secondary Screen")
 					gosub overkill
 				if (page="edit" or page="")
-					Mousemove skipx, rulery
+					Mousemove skipx, ruler.edy
 				else if (page="color") 
-					Mousemove colrulerx, colrulery	
+					Mousemove ruler.cox, ruler.coy	
 				else if (page="fusion")
-					Mousemove fusrulerx, fusrulery	
+					Mousemove ruler.fux, ruler.fuy	
 				else if (page="fairlight")
-					Mousemove skipx, fairrulery	
+					Mousemove skipx, ruler.fay	
 				else if (page="render")
-					Mousemove skipx, renrulery							
+					Mousemove skipx, ruler.rey							
 				Send {lbutton down}
 				heldf1 := 1
 				scrollmod := 1
 				mousegetpos x,y
-				tooltip ◀ ◈ ▶, x-24, y+12				; ◀ ◈ ▶  or  ◀ ◆ ▶  
+				tooltip ◀ ◈ ▶, x-24, y+12				; ◀ ◈ ▶      or  ◀ ◆ ▶ ?
 				}
 		keywait f1
 		}
@@ -521,7 +526,7 @@ $!f1::
 	if WinActive("ahk_exe Resolve.exe") 
 		{
 		pixpicker := true
-		i:=2
+		cal:=2
 		mousegetpos startx, starty
 		gosub movetoruler
 		tooltip -- PIXPICKER --
@@ -530,21 +535,6 @@ $!f1::
 		Sendinput ^w
 Return
 
-/*
-f1 & Lbutton::
-	Sendinput ^e
-	sleep 10
-	click
-	sleep 10
-	Sendinput {f1}
-Return
-
-f1 & Scrolllock::
-	Scrollmod := 1
-	tooltip <-  ->
-return			
-
-*/
 
 ;------------------------------------------------------------ g10 mouse: selects title bar in chrome, up one folder windows exp
 $f20::
@@ -560,10 +550,10 @@ $f20::
 					gosub overkill
 				Coordmode mouse screen
 				Mousegetpos skipx, skipy
-				Mousemove calibratepix.fairlightx, calibratepix.mediay		
+				Mousemove calpix.fax, calpix.mey		
 				heldf20 := 1
 				choosepage:=true
-				buttonskipper := (calibratepix.renderx - calibratepix.mediax)/6
+				buttonskipper := (calpix.rex - calpix.mex)/6
 				}
 			Keywait f20
 			}
@@ -579,9 +569,9 @@ f20 up::
 			heldf20:=0
 			choosepage:=false
 			sleep 200
-			page := pagecheck(calibratepix)
+			page := pagecheck(calpix)
 			sleep 800
-			page := pagecheck(calibratepix)
+			page := pagecheck(calpix)
 			if (page = "") 
 				gosub overkill 
 			}
@@ -616,7 +606,7 @@ $f21::
 		keywait f21
 		page := "edit"
 		coordmode tooltip screen
-		tooltip % page, calibratepix.fusionx-50, 1, 2
+		tooltip % page, calpix.fux-50, 1, 2
 		}
 Return
 
@@ -638,7 +628,7 @@ $!f21::
 		Sendinput +4
 		page := "color"
 		coordmode tooltip screen
-		tooltip % page, calibratepix.fusionx-50, 1, 2
+		tooltip % page, calpix.fux-50, 1, 2
 		}
 	else
 		Sendinput ^{tab}
@@ -1057,29 +1047,29 @@ Return
 Return
 
 
-Ralt & q::
-	if (scrollmod>=1)
-	mousemove, -5,-5,,R
-	sleep 10
-return
+; Ralt & q::														; WHAT IS ALL THIS???? thumbpad 8way. Delete??
+	; if (scrollmod>=1)
+	; mousemove, -5,-5,,R
+	; sleep 10
+; return
 
-Ralt & e::
-	if (scrollmod>=1)
-	mousemove, 5,-5,,R
-	sleep 10
-return
+; Ralt & e::
+	; if (scrollmod>=1)
+	; mousemove, 5,-5,,R
+	; sleep 10
+; return
 
-Ralt & z::
-	if (scrollmod>=1)
-	mousemove, -5,5,,R
-	sleep 10
-return
+; Ralt & z::
+	; if (scrollmod>=1)
+	; mousemove, -5,5,,R
+	; sleep 10
+; return
 
-Ralt & c::
-	if (scrollmod>=1)
-	mousemove, 5,5,,R
-	sleep 10
-return
+; Ralt & c::
+	; if (scrollmod>=1)
+	; mousemove, 5,5,,R
+	; sleep 10
+; return
 
 $up::
 	if (scrollmod>=1) {
@@ -1118,11 +1108,6 @@ $right::
 return
 
 
-altstate:
-	state := getkeystate("alt")
-	if (A_Priorhotkey= "$!#tab" && state=1)
-		wheelarrow:=1
-return
 
 $wheelup::
 	If (scrollmod = 1)
@@ -1173,11 +1158,9 @@ $^wheeldown::
 	mousemove, 8,0,,R 
 	else if (scrollmod = 2)
 	mousemove, 0,8,,R
-	Else if (wheelarrow = 0)
-	gosub altstate
-	if (wheelarrow = 1)
+	else if (wheelarrow = 1)
 	send {right}
-	Else
+	else
 	send ^{wheeldown}
 Return
 
@@ -1239,37 +1222,49 @@ Mbutton::
 	coordmode pixel screen											; screen coordinates
 	coordmode mouse screen
 	; coordmode tooltip screen
-	if (i=0) {														; set new coords for media button
+	if (cal=0) {														; set new coords for media button
 		Mousegetpos, medx, medy
-		calibratepix.mediax:=medx
-		calibratepix.mediay:=medy
-		tooltip -- RENDER --,calibratepix.renderx-80, calibratepix.mediay-50
-		mousemove calibratepix.renderx, calibratepix.mediay		
+		calpix.mex:=medx
+		calpix.mey:=medy
+		tooltip -- RENDER --,calpix.rex-80, calpix.mey-50
+		mousemove calpix.rex, calpix.mey		
 		}
-	if (i=1) {
+	if (cal=1) {
 		Mousegetpos, renx, reny										; set new coord for render button
-		calibratepix.renderx:=renx
-		calibratepix.cutx:= medx + (renx-medx)/6					; set coords of other buttons relatively
-		calibratepix.editx:= medx + 2*(renx-medx)/6
-		calibratepix.fusionx:= medx + 3*(renx-medx)/6
-		calibratepix.colorx:= medx + 4*(renx-medx)/6
-		calibratepix.fairlightx:= medx + 5*(renx-medx)/6
+		calpix.rex:=renx
+		calpix.cutx:= medx + (renx-medx)/6					; set coords of other buttons relatively
+		calpix.edx:= medx + 2*(renx-medx)/6
+		calpix.fux:= medx + 3*(renx-medx)/6
+		calpix.cox:= medx + 4*(renx-medx)/6
+		calpix.fax:= medx + 5*(renx-medx)/6
 		gosub movetoruler	
 		tooltip -- RULER --
 		}
-	i++																; not i++ at the end so as to reset it cleanly
-	if (i=3) {
-		if (page="edit")
-			Mousegetpos, rulerx, rulery									; set edit timeline ruler position
-		else if (page="color")
-			Mousegetpos, colrulerx, colrulery
-		else if (page="fusion")
-			Mousegetpos, fusrulerx, fusrulery		
-		else if (page="fairlight")
-			Mousegetpos, rulerx, fairrulery
-		else if (page="render")
-			Mousegetpos, rulerx, renrulery			
-		i:=0
+	cal++																; not i++ at the end so as to reset it cleanly
+	if (cal=3) {
+		if (page="edit") {
+			Mousegetpos, edx, edy				; set edit timeline ruler position
+			ruler.edy:=edy
+			}
+		else if (page="color") {
+			Mousegetpos, cox, coy
+			ruler.cox:=cox
+			ruler.coy:=coy
+			}
+		else if (page="fusion") {
+			Mousegetpos, fux, fuy
+			ruler.fux:=fux
+			ruler.fuy:=fuy
+			}			
+		else if (page="fairlight") {
+			Mousegetpos, fax, fay
+			ruler.fay:=fay
+			}
+		else if (page="render") {
+			Mousegetpos, rex, rey	
+			ruler.rey:=rey
+			}
+		cal:=0
 		pixpicker := false
 		tooltip -- SAVED --
 		mousemove startx, starty	
@@ -1292,14 +1287,14 @@ return
 $wheelup::
 	Coordmode mouse screen
 	Mousegetpos buttx, butty
-	if (buttx > calibratepix.mediax+20)
+	if (buttx > calpix.mex+20)
 		mousemove buttx-buttonskipper, butty
 return
 
 $wheeldown::
 	Coordmode mouse screen
 	Mousegetpos buttx, butty
-	if (buttx < calibratepix.renderx-20)
+	if (buttx < calpix.rex-20)
 		mousemove buttx+buttonskipper, butty
 return
 
