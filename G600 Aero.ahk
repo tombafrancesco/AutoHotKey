@@ -2,7 +2,8 @@
 ; #Warn  ; Enable warnings to assist with detecting common errors.
 SendMode Input  ; Recommended for new scripts due to its superior speed and reliability.
 SetWorkingDir %A_ScriptDir%  ; Ensures a consistent starting directory.
-
+; #include C:\Users\tomba\OneDrive\Desktop\AutoHotKey\lib\Acc.ahk 	; can be included for Acc functions
+; #include C:\Users\tomba\OneDrive\Desktop\AutoHotKey\lib\func.ahk  ; could be a library for useful functions (eg morse?)
 
 #SingleInstance Force
 
@@ -38,7 +39,6 @@ boost := 	30												; add boost factor. the higher the value, the slower to 
 limit := 	60												; maximum number of scrolls sent per click, so doesn't overwhelm (ie max velocity) Default: 60.
 distance := 0												; Runtime variables. Do not modify.
 vmax := 	1
-
 
 
 
@@ -331,8 +331,8 @@ gui, add, text, y+2, % "vmax: " vmax
 
 gui +LastFound +OwnDialogs +AlwaysOnTop
 
-
 return
+
 
 
 ; o o o o o o o o o o o o o o o o o o o FASTSCROLL o o o o o o o o o o o o o o o o o o o o
@@ -538,8 +538,16 @@ Return
 
 ;------------------------------------------------------------ g10 mouse: selects title bar in chrome, up one folder windows exp
 $f20::
-	if WinActive("ahk_exe chrome.exe") 
+	if WinActive("ahk_exe chrome.exe") {
 		Sendinput {f6}
+		Keywait, f20, t0.2
+		if errorlevel {
+			heldf20 := 1
+			choosebook := true
+			send {f6 2}
+			}
+		Keywait, f20
+		}
 	else if WinActive("ahk_exe explorer.exe") 
 		Sendinput !{up}
 	else if WinActive("ahk_exe resolve.exe") {
@@ -692,16 +700,13 @@ $f23::
 	else {
 		  if ((A_PriorHotkey = "f23 up" || A_PriorHotkey = "$f22") && A_TimeSincePriorHotkey < 500) {			
 			if WinActive("ahk_exe Notepad++.exe") 
-				Send {enter}
+				Send ^+{f5}													;saved as RUN(f5): $(FULL_CURRENT_PATH)
 			else
 				Sendinput {esc}
 			}
 		else {
-			if WinActive("ahk_exe Notepad++.exe") {
+			if WinActive("ahk_exe Notepad++.exe") 
 				send ^s
-				sleep 30
-				Send {f5}
-				}
 			else
 				Sendinput ^{f5}	
 			}
@@ -742,7 +747,28 @@ Return
 
 
 ;------------------------------------------------------------ G15:ctrl
+ 	
 ;------------------------------------------------------------ G16:shift
+
+
+$+wheelup::
+	if WinActive("ahk_exe resolve.exe") 
+		send +{wheelup}
+	else if WinActive("ahk_exe chrome.exe") 
+		send +{wheelup}
+	else
+		send {wheelleft}
+Return
+
+
+$+wheeldown::
+	if WinActive("ahk_exe resolve.exe")
+		send +{wheeldown}
+	else if WinActive("ahk_exe chrome.exe") 
+		send +{wheeldown}
+	else
+		send {wheelright}
+Return
 
 
 
@@ -967,6 +993,29 @@ Return
 ;------------------------------------------------------------							888   .o88
 ;------------------------------------------------------------							888.o88888
 
+
+;------------------------------------------------------------ Alt wheel skips ahead youtube
+
+$!WheelDown::
+	if WinActive("ahk_exe chrome.exe") 
+		Sendinput {right}
+	else if WinActive("ahk_exe spotify.exe")
+		send +{right}
+	else
+		Sendinput !{WheelDown}
+Return
+
+$!WheelUp::
+	if WinActive("ahk_exe chrome.exe") 
+		Sendinput {left}
+	else if WinActive("ahk_exe spotify.exe")
+		send +{left}	
+	else
+		Sendinput !{WheelUp}
+Return
+
+
+
 ;---------------------------------------------------------- mouse wheel L,R
 $home::
 if !WinActive("ahk_exe resolve.exe") 						
@@ -992,7 +1041,7 @@ return
 ;  ooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo
 ;  ooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo
 
-; o o o o o o o o o o o o o o o TWEAK BUTTON MODIFIER o o o o o o o o o o o o o o o
+; o o o o o o o o o o o o o o o TWEAK BUTTON MODIFIER G7 o o o o o o o o o o o o o o o
 
 Scrolllock::
 	if WinActive("ahk_exe chrome.exe") 
@@ -1047,75 +1096,18 @@ Return
 Return
 
 
-; Ralt & q::														; WHAT IS ALL THIS???? thumbpad 8way. Delete??
-	; if (scrollmod>=1)
-	; mousemove, -5,-5,,R
-	; sleep 10
-; return
 
-; Ralt & e::
-	; if (scrollmod>=1)
-	; mousemove, 5,-5,,R
-	; sleep 10
-; return
+; o o o o o o o o o o o o o o o TWEAK SCROLLMOD o o o o o o o o o o o o o o o
 
-; Ralt & z::
-	; if (scrollmod>=1)
-	; mousemove, -5,5,,R
-	; sleep 10
-; return
+#if (scrollmod!=0)
+ 
 
-; Ralt & c::
-	; if (scrollmod>=1)
-	; mousemove, 5,5,,R
-	; sleep 10
-; return
-
-$up::
-	if (scrollmod>=1) {
-		mousemove, 0,-5,,R
-		sleep 10
-		}
-	else
-		Send {up}
-return
-
-$down::
-	if (scrollmod>=1) {
-		mousemove, 0,5,,R
-		sleep 10
-		}
-	else
-		Send {down}
-return
-
-$left::
-	if (scrollmod>=1) {
-		mousemove, -5,0,,R
-		sleep 10
-		}
-	else
-		Send {left}
-return
-
-$right::
-	if (scrollmod>=1) {
-		mousemove, 5,0,,R
-		sleep 10
-		}
-	else
-		Send {right}
-return
-
-
-
+									;WHEEL UP
 $wheelup::
 	If (scrollmod = 1)
 	mousemove, -1,0,,R 
 	else if (scrollmod = 2)
 	mousemove, 0,-1,,R
-	else
-	send {wheelup}
 Return
 
 $^wheelup::
@@ -1123,34 +1115,21 @@ $^wheelup::
 	mousemove, -8,0,,R 
 	else if (scrollmod = 2)
 	mousemove, 0,-8,,R
-	Else
-	send ^{wheelup}
 Return
 
-		
-
 $+wheelup::
-	if WinActive("ahk_exe resolve.exe") {
 	If (scrollmod = 1)
 	mousemove, -30,0,,R 
 	else if (scrollmod = 2)
 	mousemove, 0,-30,,R
-	Else
-	send +{wheelup}
-	}
-	else if WinActive("ahk_exe chrome.exe")
-		Sendinput +{Wheelup}
-	else
-		send {wheelleft}
 Return
 
+									;WHEELDOWN
 $wheeldown::
 	If (scrollmod = 1)
 	mousemove, 1,0,,R 
 	else if (scrollmod = 2)
 	mousemove, 0,1,,R
-	Else
-	send {wheeldown}
 Return
 
 $^wheeldown::
@@ -1158,59 +1137,50 @@ $^wheeldown::
 	mousemove, 8,0,,R 
 	else if (scrollmod = 2)
 	mousemove, 0,8,,R
-	else if (wheelarrow = 1)
-	send {right}
-	else
-	send ^{wheeldown}
 Return
 
 
 $+wheeldown::
-	if WinActive("ahk_exe resolve.exe")
-	{
 	If (scrollmod = 1)
 	mousemove, 30,0,,R 
 	else if (scrollmod = 2)
 	mousemove, 0,30,,R
-	Else
-	send +{wheeldown}
-	}
-	else if WinActive("ahk_exe chrome.exe")
-		Sendinput +{Wheeldown}
-	else
-		send {wheelright}
 Return
 
-~Lbutton::                      ; release TWEAK
-	if (scrollmod!=0) {
+
+$up::
+		mousemove, 0,-5,,R
+		sleep 10
+return
+
+$down::
+		mousemove, 0,5,,R
+		sleep 10
+return
+
+$left::
+		mousemove, -5,0,,R
+		sleep 10
+return
+
+$right::
+		mousemove, 5,0,,R
+		sleep 10
+return
+
+
+~Lbutton::                    				  ; exit TWEAK (scrollmod)
 		Scrollmod :=0
 		tooltip 
-		}
 Return
 
+; Ralt & q::														; WHAT IS ALL THIS???? thumbpad 8way. Delete?? - if you want it back go find it
+	; if (scrollmod>=1)
+	; mousemove, -5,-5,,R
+	; sleep 10
+; return
 
-
-;------------------------------------------------------------ Alt wheel skips ahead youtube
-
-$!WheelDown::
-	if WinActive("ahk_exe chrome.exe") 
-		Sendinput {right}
-	else if WinActive("ahk_exe spotify.exe")
-		send +{right}
-	else
-		Sendinput !{WheelDown}
-Return
-
-$!WheelUp::
-	if WinActive("ahk_exe chrome.exe") 
-		Sendinput {left}
-	else if WinActive("ahk_exe spotify.exe")
-		send +{left}	
-	else
-		Sendinput !{WheelUp}
-Return
-
-
+#if
 
 
 ; o o o o o o o o o o o o o o o o o o o CALIBRATE PIXPICKER o o o o o o o o o o o o o o o o 
@@ -1300,7 +1270,7 @@ return
 
 #if
 
-; o o o o o o o o o o o o o o o o o o o CHOOSE PAGE RESOLVE o o o o o o o o o o o o o o o o 
+; o o o o o o o o o o o o o o o o o SELECT KEYFRAME BUTTON CLICK RESOLVE o o o o o o o o o o
 
 #if keyfredit
 
@@ -1341,3 +1311,34 @@ return
 
 #if
 
+; o o o o o o o o o o o o o o o o o o o CHOOSE BOOKMARK CHROME o o o o o o o o o o o o o o o o 
+
+#if choosebook
+
+f20 & wheelup::
+	if (a_thishotkey=a_priorhotkey && a_timesincepriorhotkey<100)			;make it faster
+		send {left}
+	send {left}
+return
+
+f20 & wheeldown::
+	if (a_thishotkey=a_priorhotkey && a_timesincepriorhotkey<100)
+		send {right}
+	send {right}
+return
+
+~f20 up::																	;the tilde ~ is key!
+	if (heldf20=1) {
+		heldf20:=0
+		choosebook:=false
+		if WinActive("ahk_exe chrome.exe")
+			send {enter}
+		}
+return	
+
+numpad0::
+	msgbox % a_priorhotkey
+return
+
+
+#if
