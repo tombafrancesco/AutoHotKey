@@ -201,6 +201,13 @@ Return
 
 ; o o o o o o o o o o o o o o o KEYBOARD STUFF o o o o o o o o o o o o o o o o o o o o o
 
+;----------------------------------- lock window on top
+
+^space:: Winset, Alwaysontop, , A 
+Return
+
+
+
 ;-----------------------------------undo button; exists here for scrollmod reasons
 $f16::
 	if (scrollmod = 0)							;no long press for the moment....
@@ -599,7 +606,7 @@ $f21::
 				WinActivate ahk_exe Resolve.exe
 				heldf21:=2
 			}
-		else
+		else	
 			send ^f
 		keywait, f21
 		}
@@ -617,6 +624,11 @@ $f21::
 		tooltip % page, calpix.fux-50, 1, 2
 		}
 Return
+
+numpad0:: 
+	if (A_PriorHotkey="f21 up")
+	msgbox % A_PriorHotkey
+return
 
 f21 up::
 	if (heldf21=1) {
@@ -728,6 +740,13 @@ $f24::
 	else if WinActive("ahk_exe notepad++.exe")	
 		sendinput ^q
 	else 
+		keywait, f24, t.3
+			if errorlevel {
+			 Send, ^c
+			 Sleep 50
+			 Run, http://www.google.com/search?q=%clipboard%
+			}
+		keywait f24 	
 		Sendinput !{right}
 Return
 

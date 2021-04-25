@@ -20,3 +20,19 @@ GetElementByName(AccObj, name) {									;function for URL retrieval in chrome
 	; ytpos := instr( AccAddressBar.accValue(0), "youtube.com")							;finds needle "youtube.com" in haystack "accbar.."
 	; msgbox % ytpos
 ; return
+
+
+Morse(timeout = 250) { 
+   tout := timeout/1000
+   key := RegExReplace(A_ThisHotKey,"[\*\~\$\#\+\!\^]")
+   Loop {
+      t := A_TickCount
+      KeyWait %key%
+      Pattern .= A_TickCount-t > timeout
+      KeyWait %key%,DT%tout%
+      If (ErrorLevel)
+         Return Pattern
+   }
+}
+
+
