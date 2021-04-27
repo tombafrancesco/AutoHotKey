@@ -3,7 +3,7 @@
 SendMode Input  ; Recommended for new scripts due to its superior speed and reliability.
 SetWorkingDir %A_ScriptDir%  ; Ensures a consistent starting directory.
 ; #include C:\Users\tomba\OneDrive\Desktop\AutoHotKey\lib\Acc.ahk 	; can be included for Acc functions
-; #include C:\Users\tomba\OneDrive\Desktop\AutoHotKey\lib\func.ahk  ; could be a library for useful functions (eg morse?)
+#include C:\Users\tomba\OneDrive\Desktop\AutoHotKey\lib\func.ahk  ; could be a library for useful functions (eg morse?)
 
 #SingleInstance Force
 
@@ -12,7 +12,7 @@ Coordmode pixel screen
 coordmode mouse screen
 
 
-davinci:= "DaVinci Resolve by Blackmagic Design - 17.1.0 ahk_class Qt5QWindow"
+davinci:= "DaVinci Resolve by Blackmagic Design"
 
 
 ruler  :=  {edx:0, 	edy:140, cox:600, coy:652, fux:770, fuy:480, fay:0, fay:160, rex:0, rey:780}						;ruler pos
@@ -32,7 +32,7 @@ undoscroll :=	0											;g19 undo-redo scroll
 highlight :=	0											;g13 color page
 xfastscroll :=	0											;pause fastscroll
 		
-
+   
 		;FASTSCROLL:
 timeout := 	600												; length of a scrolling session. time to accumulate boost. Default: 500. Recommended 400 - 1000.
 boost := 	30												; add boost factor. the higher the value, the slower to activate, and accumulate. disabled:0 Default: 20.															
@@ -62,6 +62,8 @@ Morse(timeout = 250) {
 
 
 pagecheck(x) {
+	; SetTitleMatchMode 2
+	; WinActivate %davinci%
 	Coordmode pixel screen																	
 	pixelgetcolor, editbutt, x.edx, x.mey
 	pixelgetcolor, cutbutt, x.cutx, x.mey
@@ -127,7 +129,21 @@ return keyframe
 }
 
 
+
+
 ; o o o o o o o o o o o o o o o general gosubs, gotos  o o o o o o o o o o o o o o o o o 
+
+
+underkill:													;be careful with this - can bug up overkill for some reason
+	if WinActive("ahk_exe resolve.exe") {
+	SetTitleMatchMode 2
+	WinActivate %davinci%
+	page:=pagecheck(calpix)
+	coordmode tooltip screen
+	tooltip % page, calpix.fux-50, 1, 2
+	}
+return
+
 
 overkill:													;sometimes pagecheck fails. this should fix problem 99%. 
 	if WinActive("ahk_exe resolve.exe") {
@@ -159,22 +175,42 @@ overkill:													;sometimes pagecheck fails. this should fix problem 99%.
 	}
 return
 
+; movetoruler:
+
+	; ; Coordmode mouse screen
+	; Mousegetpos skipx, skipy
+	; if (page="edit")
+		; Mousemove skipx, ruler.edy
+	; else if (page="color") 
+		; Mousemove ruler.cox, ruler.coy	
+	; else if (page="fusion")
+		; Mousemove ruler.fux, ruler.fuy	
+	; else if (page="fairlight")
+		; Mousemove skipx, ruler.fay	
+	; else if (page="render")
+		; Mousemove skipx, ruler.fuy
+; Return		
+
 movetoruler:
-	if WinActive("Secondary Screen")
-		gosub overkill
-	Coordmode mouse screen
-	Mousegetpos skipx, skipy
-	if (page="edit")
-		Mousemove skipx, ruler.edy
+	skip := GetCursorPos()													;like mousegetpos - DLL get+setcursorpos less buggy than native ahk
+	if (skip.x>2046)
+		DllCall("SetCursorPos", "int", 10, "int", 54) 						;setcursorpos doesn't work properly from second screen
+	if (page="edit" or page="") { 
+		if (skip.x>2046)
+			DllCall("SetCursorPos", "int", 1110, "int", ruler.edy) 			;dllcalls set on 27.04.21 - revert to earlier for mousemove
+		else	
+			DllCall("SetCursorPos", "int", skip.x, "int", ruler.edy)
+		}
 	else if (page="color") 
-		Mousemove ruler.cox, ruler.coy	
+		DllCall("SetCursorPos", "int", ruler.cox, "int", ruler.coy)
 	else if (page="fusion")
-		Mousemove ruler.fux, ruler.fuy	
+		DllCall("SetCursorPos", "int", ruler.fux, "int", ruler.fuy)
 	else if (page="fairlight")
-		Mousemove skipx, ruler.fay	
+		DllCall("SetCursorPos", "int", skip.x, "int", ruler.fay)
 	else if (page="render")
-		Mousemove skipx, ruler.fuy
-Return		
+		DllCall("SetCursorPos", "int", skip.x, "int", ruler.rey)		
+return
+
 
 cursing:
     cursed :=!cursed
@@ -206,6 +242,65 @@ Return
 ^space:: Winset, Alwaysontop, , A 
 Return
 
+;----------------------------------- plain text paste, file path
+
+!^v::
+	send % clipboard
+return
+
+;----------------------------------- brackets, quotes - Alt GR modifier
+
+~!^[::
+	SetTitleMatchMode, 2														; launch brackets altgr script
+	DetectHiddenWindows, On
+	If !WinExist("brackets_altgr.ahk" . " ahk_class AutoHotkey")
+		Run, C:\Users\tomba\OneDrive\Desktop\AutoHotKey\brackets_altgr.ahk
+Return
+
+;----------------------------------- capslock modifier
+
+!Capslock::
+^Capslock::
++Capslock::
+	clipboard =
+	send ^c
+	clipwait 1
+	text := clipboard
+	if text =
+		return
+
+menu, testmenu, add, upper, stateyourcase
+menu, testmenu, add, title, stateyourcase
+menu, testmenu, add, lower, stateyourcase
+menu, testmenu, show  
+return 
+
+StateYourCase:
+	If (A_ThisMenuItem = "Title") { 
+		StringLower text, text, T   ; Title case
+		}
+	Else If (A_ThisMenuItem = "Upper") { ;       
+		StringUpper text, text ; UpperCase
+		}
+	Else { ;       
+		StringLower text, text ; LowerCase
+		}
+	Clipboard := text
+	ClipWait 1
+	Send ^v
+Return 
+
+
+
+
+!^Appskey::
+	winget, trans, transparent, a
+	if (trans="")
+		Winset, Transparent, 128, A
+	else
+		Winset, Transparent, OFF, A
+Return
+
 
 
 ;-----------------------------------undo button; exists here for scrollmod reasons
@@ -226,16 +321,19 @@ $f16::
 		}
 Return
 
+
 ;-----------------------------------windowspy hold Menu key
+
 $AppsKey::
 	p := Morse()
 	if WinActive("ahk_exe resolve.exe") {
 		If (p = "0") {														; single
-			winactivate davinci
 			scrollmod := 0
 			heldf1:=0
 			tooltip
 			page := pagecheck(calpix)
+			if (page = "") 
+				gosub underkill
 			if (page = "") 
 				gosub overkill
 			}
@@ -243,9 +341,9 @@ $AppsKey::
 			page := pagecheck(calpix)
 			if WinActive("Secondary Screen")
 				gosub overkill
-			coordmode mouse screen
-			mousegetpos startx, starty
-			mousemove calpix.mex, calpix.mey
+			start := GetCursorPos()											;still works with slightly buggy mousemove etc... but works 99%+
+			DllCall("SetCursorPos", "int", 10, "int", 54) 					;setcursorpos doesn't work properly from second screen
+			DllCall("SetCursorPos", "int", calpix.mex, "int", calpix.mey)
 			pixpicker := true
 			tooltip, -- MEDIA -- , calpix.mex-80, calpix.mey-50
 			}
@@ -259,17 +357,16 @@ $AppsKey::
 	else 
 		If (p = "0") 	{
 			tooltip,,,,2
-			; send {appskey}
 			}
 		Else  																
-			run, C:\Program Files\AutoHotkey\WindowSpy.ahk
-			
+			run, C:\Program Files\AutoHotkey\WindowSpy.ahk		
 Return
 
-*AppsKey::																			;almost certainly doesn't work. supposed to kill glitchbug
-sleep 1000
-Send {ctrl up}{shift up}{rwin up}{lwin up}{ralt up}{lalt up}
-return
+
+#delete::
+	send {insert}
+Return
+
 
 ; o o o o o o o o o o o o o o o o o o o VAR GUI o o o o o o o o o o o o o o o o o o o o
 
@@ -392,7 +489,7 @@ Scroll:
 return
 
 +^0::
-	keywait, 0, t.3
+	keywait, 0, t.3												; Hasn't fucked up on me yet - maybe delete if keeps on playing ball?
 	if errorlevel {												; reset fastscroll
 		scrollmod=:0
 		heldf1:=0
@@ -454,20 +551,26 @@ $f1::
 		send {f1}
 		Keywait, f1, t0.3
 			if errorlevel {	
-				Coordmode mouse screen
-				Mousegetpos skipx, skipy
-				if WinActive("Secondary Screen")
-					gosub overkill
-				if (page="edit" or page="")
-					Mousemove skipx, ruler.edy
-				else if (page="color") 
-					Mousemove ruler.cox, ruler.coy	
-				else if (page="fusion")
-					Mousemove ruler.fux, ruler.fuy	
-				else if (page="fairlight")
-					Mousemove skipx, ruler.fay	
-				else if (page="render")
-					Mousemove skipx, ruler.rey							
+				; skip := GetCursorPos()													;like mousegetpos - DLL get+setcursorpos less buggy than native ahk
+				; ; if WinActive("Secondary Screen")
+					; ; gosub overkill
+				; if (skip.x>2046)
+					; DllCall("SetCursorPos", "int", 10, "int", 54) 						;setcursorpos doesn't work properly from second screen
+				; if (page="edit" or page="") { 
+					; if (skip.x>2046)
+						; DllCall("SetCursorPos", "int", 1110, "int", ruler.edy) 			;dllcalls set on 27.04.21 - revert to earlier for mousemove
+					; else	
+						; DllCall("SetCursorPos", "int", skip.x, "int", ruler.edy)
+					; }
+				; else if (page="color") 
+					; DllCall("SetCursorPos", "int", ruler.cox, "int", ruler.coy)
+				; else if (page="fusion")
+					; DllCall("SetCursorPos", "int", ruler.fux, "int", ruler.fuy)
+				; else if (page="fairlight")
+					; DllCall("SetCursorPos", "int", skip.x, "int", ruler.fay)
+				; else if (page="render")
+					; DllCall("SetCursorPos", "int", skip.x, "int", ruler.rey)		
+				gosub movetoruler		
 				Send {lbutton down}
 				heldf1 := 1
 				scrollmod := 1
@@ -485,11 +588,12 @@ Return
 f1 up::
 	if (heldf1=1) {
 		Send {Lbutton up}
-		mousegetpos skippedx, skippedy
-		if (page="edit")
-			Mousemove, skippedx, skipy
+		if (page="edit") {
+			mousegetpos skippedx, skippedy
+			Mousemove, skippedx, skip.y
+			}
 		else
-			Mousemove, skipx, skipy
+			Mousemove, skip.x, skip.y
 		scrollmod := 0
 		heldf1:=0
 		tooltip
@@ -523,7 +627,7 @@ $^!f1::
 	if WinActive("ahk_exe Resolve.exe") {
 		pixpicker := true
 		i:=2
-		mousegetpos startx, starty
+		start := GetCursorPos()
 		gosub movetoruler
 		tooltip -- PIXPICKER --
 	}
@@ -534,7 +638,7 @@ $!f1::
 		{
 		pixpicker := true
 		cal:=2
-		mousegetpos startx, starty
+		start := GetCursorPos()
 		gosub movetoruler
 		tooltip -- PIXPICKER --
 		}
@@ -557,19 +661,21 @@ $f20::
 		}
 	else if WinActive("ahk_exe explorer.exe") 
 		Sendinput !{up}
-	else if WinActive("ahk_exe resolve.exe") {
-			Sendinput {f20}									; up to here we're safe
+	else if WinActive("ahk_exe resolve.exe") {							
 			Keywait, f20, t0.3
 			if errorlevel {
+				skip := GetCursorPos()												;seems to work better than MouseGetPos
 				if WinActive("Secondary Screen")
 					gosub overkill
-				Coordmode mouse screen
-				Mousegetpos skipx, skipy
-				Mousemove calpix.fax, calpix.mey		
+				DllCall("SetCursorPos", "int", 10, "int", 54) 						;setcursorpos doesn't work properly from second screen
+				DllCall("SetCursorPos", "int", calpix.fax, "int", calpix.mey) 
+				; Mousemove calpix.fax, calpix.mey		
 				heldf20 := 1
 				choosepage:=true
 				buttonskipper := (calpix.rex - calpix.mex)/6
 				}
+			else	
+				Sendinput {f20}		
 			Keywait f20
 			}
 	
@@ -580,12 +686,12 @@ f20 up::
 		if (heldf20=1) {
 			MouseClick 
 			mouseclick,,1000,3
-			Mousemove, skipx, skipy
+			Mousemove, skip.x, skip.y
 			heldf20:=0
 			choosepage:=false
-			sleep 200
-			page := pagecheck(calpix)
-			sleep 800
+			SetTitleMatchMode 2
+			sleep 100
+			WinActivate %davinci%
 			page := pagecheck(calpix)
 			if (page = "") 
 				gosub overkill 
@@ -593,24 +699,34 @@ f20 up::
 		}
 return	
 
+; numpad1::
+	; msgbox % A_Priorkey
+; return
 
 ;------------------------------------------------------------G11 mouse: Launch Resolve / switch to Edit page
 ;------------------------------------------------------------long press for blade tool
 $f21::
 	If !WinActive("ahk_exe Resolve.exe") {
-		keywait, f21, t.2
-		if errorlevel {
-			IfWinNotExist, ahk_exe Resolve.exe
-				Run, C:\Program Files\Blackmagic Design\DaVinci Resolve\Resolve.exe
-			else
-				WinActivate ahk_exe Resolve.exe
-				heldf21:=2
+		if (A_Priorhotkey="$f21" && A_timesincepriorhotkey<2500)
+			send {enter}
+		else {
+			keywait, f21, t.3
+			if errorlevel {
+				IfWinNotExist, ahk_exe Resolve.exe
+					Run, C:\Program Files\Blackmagic Design\DaVinci Resolve\Resolve.exe
+				else {
+					coordmode tooltip screen
+					tooltip % page, calpix.fux-50, 1, 2
+					SetTitleMatchMode 2
+					WinActivate %davinci%
+					}
+				}
+			else 	
+				send ^f														;find 
+			keywait, f21
 			}
-		else	
-			send ^f
-		keywait, f21
 		}
-	if WinActive("ahk_exe Resolve.exe") {
+	else if WinActive("ahk_exe Resolve.exe") {
 		keywait, f21, t.2
 		send +q 
 		sleep 10
@@ -620,33 +736,37 @@ $f21::
 			}
 		keywait f21
 		page := "edit"
+		SetTitleMatchMode 2
+		sleep 100
+		WinActivate %davinci%
 		coordmode tooltip screen
 		tooltip % page, calpix.fux-50, 1, 2
 		}
 Return
 
-numpad0:: 
-	if (A_PriorHotkey="f21 up")
-	msgbox % A_PriorHotkey
-return
+#if WinActive("ahk_exe Resolve.exe")
 
 f21 up::
 	if (heldf21=1) {
 		Send {f1}
 		heldf21:=0
 		}
-	else if (heldf21=2) {
-		sleep 300
-		heldf21:=0
-		}
 return	
 
+numpad1::
+	msgbox % A_Priorkey
+return
+
+#if
 
 ;------------------------------------------------------------ !G11 mouse: Resolve switch to Edit page / otherwise cycle back tab 
 $!f21::
 	if WinActive("ahk_exe Resolve.exe") {
 		Sendinput +4
 		page := "color"
+		sleep 100
+		SetTitleMatchMode 2
+		WinActivate %davinci%
 		coordmode tooltip screen
 		tooltip % page, calpix.fux-50, 1, 2
 		}
@@ -701,19 +821,24 @@ Return
 ;------------------------------------------------------------ g13: reload
 $f23::
 	if WinActive("ahk_exe Resolve.exe") {
+		send {f12}
 		Sendinput {f23}
-		 keywait, f23, t.3
-		 if errorlevel {
-			 highlight:=1
-			 tooltip bam
-			 }
+		keywait, f23, t.3
+			if errorlevel {
+				Send {f12}
+				highlight:=1
+				tooltip bam
+				}
+				sleep 1000
+				send {esc}
+		
 		 keywait f23
 		 }
 	else {
 		  if ((A_PriorHotkey = "f23 up" || A_PriorHotkey = "$f22") && A_TimeSincePriorHotkey < 500) {			
 			if WinActive("ahk_exe Notepad++.exe") 
 				Send ^+{f5}													;saved as RUN(f5): $(FULL_CURRENT_PATH)
-			else
+			else															
 				Sendinput {esc}
 			}
 		else {
@@ -727,10 +852,13 @@ Return
 
 	
 f23 up::
-	if (highlight=1)
+	if (highlight=1) {
 		send {f23}
 	highlight:=0
 	tooltip
+		sleep 1000
+		send {esc}
+	}
 Return
 
 ;------------------------------------------------------------ g14: forward
@@ -739,7 +867,7 @@ $f24::
 		Sendinput {f24}
 	else if WinActive("ahk_exe notepad++.exe")	
 		sendinput ^q
-	else 
+	else {
 		keywait, f24, t.3
 			if errorlevel {
 			 Send, ^c
@@ -748,6 +876,7 @@ $f24::
 			}
 		keywait f24 	
 		Sendinput !{right}
+		}
 Return
 
 ;------------------------------------------------------------ !G14 close tab
@@ -949,16 +1078,14 @@ return
 ;------------------------------------------------------------ G20 mouse launch Explorer / cycle Explorer tabs
 
 Ins:: 
-	p := Morse()
-	; DetectHiddenWindows On  ; Allows a script's hidden main window to be detected.
-	; SetTitleMatchMode 2  ; Avoids the need to specify the full path of the file below.
-	; PostMessage, 0x0111, 65303,,, fastscroll.ahk - AutoHotkey
+	p := Morse()									; how about unmorsing it??
+	; SetTitleMatchMode 2  							; Avoids the need to specify the full path of the file below.
 	If (p = "0"){
 		IfWinNotExist, ahk_class CabinetWClass 
 			Run, explorer.exe
 		
 		if WinActive("ahk_exe explorer.exe") 
-			Sendinput ^{tab}
+			WinMinimize, a
 			
 		else {
 			WinActivatebottom ahk_class CabinetWClass 
@@ -968,21 +1095,30 @@ Ins::
 		}
 	Else If (p = "00") { 						; double press
 		SetTitleMatchMode 2
-		; If WinActive("WinTitle ahk_class WinClass", "WinText", "ExcludeTitle", "ExcludeText")
+		IfWinNotExist Sticky Notes ahk_class ApplicationFrameWindow
+			Run, "C:\Users\tomba\OneDrive\Documents\AHK Shortcuts\Sticky Notes.lnk"
+		
+		else if WinActive("Sticky Notes ahk_class ApplicationFrameWindow")
+			WinClose Sticky Notes ahk_class ApplicationFrameWindow
+		else
+			WinActivate Sticky Notes ahk_class ApplicationFrameWindow		
+		}
+	Else If (p = "01") 	{						; short + long presses
+		SetTitleMatchMode 2
 		IfWinNotExist OneNote for Windows 10 ahk_class ApplicationFrameWindow
-			Run, %A_Desktop%\OneNote.lnk
+			Run, "C:\Users\tomba\OneDrive\Documents\AHK Shortcuts\OneNote for Windows 10.lnk"
 		
 		else if WinActive("OneNote for Windows 10 ahk_class ApplicationFrameWindow")
-			Sendinput hello
+			WinMinimize, a
 		else
 			WinActivate OneNote for Windows 10 ahk_class ApplicationFrameWindow
-		}
-	Else If (p = "01") 							; short + long presses
-		{}												
+		}												
 		
 	Else {										; long press
 		IfWinNotExist, ahk_exe notepad++.exe
 			Run, notepad++.exe
+		else if WinActive("ahk_exe notepad++.exe")
+			WinMinimize, a
 		else
 			WinActivate ahk_exe notepad++.exe
 		}
@@ -1000,7 +1136,7 @@ Return
 	IfWinNotExist, ahk_exe chrome.exe
 		Run, chrome.exe
 	if WinActive("ahk_exe chrome.exe")
-		Sendinput ^{tab}
+		WinMinimize, a
 	else
 		WinActivate ahk_exe chrome.exe
 Return
@@ -1043,13 +1179,22 @@ else
 	Send {home}
 Return
 	
-$end::
-if !WinActive("ahk_exe resolve.exe")
-	Sendinput {Media_Next}
-else 
-	Send {end}
-Return	
 
+$end::
+	keywait end, t.3
+	
+	if errorlevel {
+		SendMessage,0x112,0xF170,2,,Program Manager
+		DllCall("LockWorkStation")
+		Sleep 1000
+		SendMessage,0x112,0xF170,2,,Program Manager
+		}
+	else if !WinActive("ahk_exe resolve.exe")
+		Sendinput {Media_Next}
+	else
+		send {end}
+	keywait end
+Return
 
 <!<^0::
 	sendinput {Media_Play_Pause}
@@ -1208,8 +1353,8 @@ Return
 
 
 Mbutton::
-	coordmode pixel screen											; screen coordinates
-	coordmode mouse screen
+	coordmode pixel screen											; 
+	coordmode mouse screen											; still works with slightly buggy mousemove etc... but works 99%+
 	; coordmode tooltip screen
 	if (cal=0) {														; set new coords for media button
 		Mousegetpos, medx, medy
@@ -1256,7 +1401,7 @@ Mbutton::
 		cal:=0
 		pixpicker := false
 		tooltip -- SAVED --
-		mousemove startx, starty	
+		DllCall("SetCursorPos", "int", start.x, "int", start.y)
 		sleep 500
 		tooltip
 		}
@@ -1354,10 +1499,5 @@ return
 			send {enter}
 		}
 return	
-
-numpad0::
-	msgbox % a_priorhotkey
-return
-
 
 #if
