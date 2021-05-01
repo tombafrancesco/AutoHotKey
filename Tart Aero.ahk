@@ -1,14 +1,21 @@
 ﻿#NoEnv  ; Recommended for performance and compatibility with future AutoHotkey releases.
-;#Warn  ; Enable warnings to assist with detecting common errors.
 SendMode Input  ; Recommended for new scripts due to its superior speed and reliability.
 SetWorkingDir %A_ScriptDir%  ; Ensures a consistent starting directory.
-#SingleInstance Force
+#SingleInstance force
+#include C:\Users\tomba\OneDrive\Desktop\AutoHotKey\lib\func.ahk
+
+davinci := "DaVinci Resolve by Blackmagic Design - 17.1.0"
+
+inspector:={x: 1970, y: 34}
 
 
 
-inspector:={x: 1984, y: 34}
 
-~^!0:: reload
+
+
+
+
+; ~^!0:: reload
 
 ;------------------------------------------------------------RESOLVE---------------------------
 ;#ifWinActive ahk_exe Resolve.exe
@@ -78,57 +85,30 @@ $!f2::
 Return
 
 ;-----------------------------------G03; printscreen is a bit faulty i think (releases maybe?). this is a workaround
-$PrintScreen::						; still shitty
-	MouseGetPos, xpos, ypos
-	keywait, printscreen, t.12
-	if (killer=0)
-		Settimer, killprintscreen, -50	
-	else 
-		killer:=0
-	keywait printscreen
-Return
 
-$f3::
-Send {f3}
-killer:=1
-KeyWait, f3, T.2
-If ErrorLevel {
-	Send {f3}				
-	}
-KeyWait, f3
-settimer, killkiller, -200
-Return
 
-killprintscreen: 
-	if (killer=0) {
-		DllCall("SetCursorPos", "int", inspector.x, "int", inspector.y) 
-		Sendinput {LButton}
-		DllCall("SetCursorPos", "int", xpos, "int", ypos) 		; openclose inspector
-		}
-return
+; $f3::												; open close inspector - only works with dual screen
+	; winactivate % davinci
+	; WinGet, hWnd, ID, A
+	; oAcc := Acc_Get("Object", "4.2.2.3.1.1.1.3.1.3", 0, "ahk_id " hWnd)
+	; oAcc.accDoDefaultAction(0)   2.2.3.1.1.1.1.2.5
+	; oAcc := ""				     2.2.3.1.1.1.2.1.3	
+; Return
 
-killkiller:
-	killer:=0
-return
-
-!PrintScreen::
-+PrintScreen::
-^PrintScreen::
-return
+; $f3::												
+	; skip := GetCursorPos()	
+	; DllCall("SetCursorPos", "int", inspector.x, "int", inspector.y)
+	; click
+	; DllCall("SetCursorPos", "int", skip.x, "int", skip.y)
+; Return
 
 
 
-
-$!f3::							;layer node, clip attributes
+$!f3::												;layer node, clip attributes
 	KeyWait, f3, T.07
 	Send !l								
 	KeyWait, f3
 Return
-
-
-
-
-
 
 
 
@@ -139,10 +119,11 @@ $f4::
 	KeyWait, F4, T.4
 	If ErrorLevel { 
 		SoundBeep, 1500, 40
-		Send s
+		Send s										;this speed stuff needs lots of work or death
 		timer := True
 		Speed:=0
 		X:=1
+		SetFormat, IntegerFast, D
 		SetTimer, Go, -8000
 		}
 	Else {
@@ -384,16 +365,16 @@ $!f12::
 Return
 */
 ;-----------------------------------G13 (immediate press)
-$Numpad3::
-KeyWait, Numpad3, T.07
-tooltip, lah
-If ErrorLevel {
-	Send {esc}			;{deselect}
-	Sleep 100	
-	}
-KeyWait, Numpad3
-tooltip
-Return
+; $Numpad3::
+; KeyWait, Numpad3, T.07
+; tooltip, lah
+; If ErrorLevel {
+	; Send {esc}			;{deselect}
+	; Sleep 100	
+	; }
+; KeyWait, Numpad3
+; tooltip
+; Return
 
 
 $f13::
@@ -408,8 +389,8 @@ KeyWait, f13
 tooltip
 Return
 
-$!Numpad3::
-return
+; $!Numpad3::
+; return
 
 $!f13::
 	KeyWait, f13, T.07
@@ -603,29 +584,29 @@ return
 
 ;--------------------------------------------------Flagland modifier
 
-Numpad6::
-	numpaddotfix := 1
-	flagland := true
-	if (A_priorhotkey="Numpad6 up" && A_timesincepriorhotkey<300) {
-	Num6toggle := 1
-	tooltip % chr(2) chr(2) chr(2)
-	}
-	else if (num6toggle = 1) {
-		num6toggle := 0
-		tooltip
-		}
-	else 
-		tooltip % chr(2) chr(2) chr(2)
-return
+; Numpad6::
+	; numpaddotfix := 1
+	; flagland := true
+	; if (A_priorhotkey="Numpad6 up" && A_timesincepriorhotkey<300) {
+	; Num6toggle := 1
+	; tooltip % chr(2) chr(2) chr(2)
+	; }
+	; else if (num6toggle = 1) {
+		; num6toggle := 0
+		; tooltip
+		; }
+	; else 
+		; tooltip % chr(2) chr(2) chr(2)
+; return
 
-Numpad6 up::
-	numpaddotfix := 0
-	if (Num6toggle != 1) {
-	flagland := false
-	tooltip
-	}
-	else 
-return
+; Numpad6 up::
+	; numpaddotfix := 0
+	; if (Num6toggle != 1) {
+	; flagland := false
+	; tooltip
+	; }
+	; else 
+; return
 
 
 
@@ -643,7 +624,7 @@ Numpadadd::
 Numpadmult::
 Numpad1::
 Numpad2::
-Numpad3::
+; Numpad3::
 Numpad4::
 Numpad5::
 Numpad6::
@@ -848,7 +829,7 @@ Numpadadd::
 Numpadmult::
 Numpad1::
 Numpad2::
-Numpad3::
+; Numpad3::
 Numpad4::
 Numpad5::
 Numpad7::

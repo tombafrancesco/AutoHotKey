@@ -480,7 +480,7 @@ TV_BuildAccChildren(AccObj, Parent, Selected_Child="", Flag="") {
 		}
 		else {
 			added := TV_Add("[" A_Index "] " Acc_Role(child), Parent, "bold")
-			TVobj[added] := {is_obj:true, need_children:true, obj:child, childid:0, Children:[], Obj_Path:Trim(Parent_Obj_Path "," A_Index, ",")}
+			TVobj[added] := {is_obj:true, need_children:true, obj:child, childid:0, Children:[], Obj_Path:Trim(Parent_Obj_Path "." A_Index, ".")}
 		}
 		TVobj[Parent].Children.Insert(added)
 		if (A_Index = Flag)

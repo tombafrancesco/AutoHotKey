@@ -4,13 +4,10 @@ SendMode Input  ; Recommended for new scripts due to its superior speed and reli
 SetWorkingDir %A_ScriptDir%  ; Ensures a consistent starting directory.
 ; #include C:\Users\tomba\OneDrive\Desktop\AutoHotKey\lib\Acc.ahk 	; can be included for Acc functions
 #include C:\Users\tomba\OneDrive\Desktop\AutoHotKey\lib\func.ahk  ; could be a library for useful functions (eg morse?)
-
+#MaxHotkeysPerInterval 120
 #SingleInstance Force
 
 ; o o o o o o o o o o o o o o o INITIAL VALUE VARIABLES o o o o o o o o o o o o o o o o 
-Coordmode pixel screen
-coordmode mouse screen
-
 
 davinci:= "DaVinci Resolve by Blackmagic Design"
 
@@ -20,11 +17,11 @@ kf     :=  {edx:1990, edy:178, cox:1000, coy:10, fux:1000, fuy:10, fax:1000, fay
 calpix :=  {mex:700, mey:1140, cutx:820, edx:940, fux:1060, cox:1180, fax:1300, rex:1420} 								;calibrate buttons                  									
 
 
-cal := 			0											;calibrate - appskey, !f1
+cal :=			0											;calibrate - appskey, !f1
 pixpicker := 	0											;calibrate - appskey
-cursed := 		0											;cursor, g19
+cursed :=		0											;cursor, g19
 scrollmod := 	0											;g7, tweak button modifier
-heldf1 := 		0											;timeline ruler
+heldf1 :=		0											;timeline ruler
 heldf20 :=		0											;switch davinci page
 pagescroll :=	0											;!g17 pgup pgdn scroll
 wheelarrow :=	0											;!g18 scroll windows
@@ -40,25 +37,27 @@ limit := 	60												; maximum number of scrolls sent per click, so doesn't o
 distance := 0												; Runtime variables. Do not modify.
 vmax := 	1
 
+numtweak:=0
+a:={x:500,y:500}
 
+Qmode:=0
+
+
+Qreset:
+start:=A_TickCount
+q:={x:480,y:1130}
+w:={x:540,y:1130}
+e:={x:1500,y:1130}
+r:={x:1095,y:988}
+return
+
+; t:={x:1620,y:1130}
+; y:={x:1095,y:988}
 
 
 ; o o o o o o o o o o o o o o o FUNCTIONS o o o o o o o o o o o o o o o o 
-
-
-Morse(timeout = 250) { 
-   tout := timeout/1000
-   key := RegExReplace(A_ThisHotKey,"[\*\~\$\#\+\!\^]")
-   Loop {
-      t := A_TickCount
-      KeyWait %key%
-      Pattern .= A_TickCount-t > timeout
-      KeyWait %key%,DT%tout%
-      If (ErrorLevel)
-         Return Pattern
-   }
-}
-
+Coordmode pixel screen
+coordmode mouse screen
 
 
 pagecheck(x) {
@@ -122,13 +121,33 @@ keyframe(p,ex,ey,cx,cy,fx,fy,frx,fry,rx,ry) {
 	else if (p="fairlight")
 		keyframe:={x:frx,y:fry}
 	else if (p="render")
-		keyframe:={x:rx,y:ry}
-;	msgbox % keyframe.x " " keyframe.y
-	
+		keyframe:={x:rx,y:ry}	
 return keyframe
 }
-
-
+ 
+Box_Init(C="yellow") {
+	loop, 6 {
+		Gui, % A_Index + 93 ": +ToolWindow -Caption +AlwaysOnTop +LastFound"
+		}
+	; Gui, 94: Color, % C
+	; Gui, 95: Color, % C
+	Gui, 96: Color, % C
+	Gui, 97: Color, % C
+	Gui, 98: Color, % C
+	Gui, 99: Color, % C
+	; gui, 94: font, s14 w1000, Consolas
+	; gui, 94: add, text, x4 y0, Q
+	; gui, 95: font, s14 w1000, Consolas
+	; gui, 95: add, text, x4 y0, W	
+	gui, 96: font, s14 w1000, Consolas
+	gui, 96: add, text, x4 y0, Q
+	gui, 97: font, s14 w1000, Consolas
+	gui, 97: add, text, x4 y0, W	
+	gui, 98: font, s14 w1000, Consolas
+	gui, 98: add, text, x4 y0, E
+	gui, 99: font, s14 w1000, Consolas
+	gui, 99: add, text, x4 y0, R							;Use Gui +LastFoundExist and then WinExist()
+}
 
 
 ; o o o o o o o o o o o o o o o general gosubs, gotos  o o o o o o o o o o o o o o o o o 
@@ -175,21 +194,6 @@ overkill:													;sometimes pagecheck fails. this should fix problem 99%.
 	}
 return
 
-; movetoruler:
-
-	; ; Coordmode mouse screen
-	; Mousegetpos skipx, skipy
-	; if (page="edit")
-		; Mousemove skipx, ruler.edy
-	; else if (page="color") 
-		; Mousemove ruler.cox, ruler.coy	
-	; else if (page="fusion")
-		; Mousemove ruler.fux, ruler.fuy	
-	; else if (page="fairlight")
-		; Mousemove skipx, ruler.fay	
-	; else if (page="render")
-		; Mousemove skipx, ruler.fuy
-; Return		
 
 movetoruler:
 	skip := GetCursorPos()													;like mousegetpos - DLL get+setcursorpos less buggy than native ahk
@@ -230,6 +234,74 @@ cursing:
         DllCall( "SystemParametersInfo", UInt,SPI_SETCURSORS, UInt,0, UInt,0, UInt,0 )
     }
 Return
+
+
+Qboxes:	
+	Box_Init()
+	; Gui, 94: Show, % "x" q.x " y" q.y " w" 20 " h" 20 " NA", Qbox
+	; Gui, 95: Show, % "x" w.x " y" w.y " w" 20 " h" 20 " NA", Bullseye
+	Gui, 96: Show, % "x" q.x-10 " y" q.y-10 " w" 20 " h" 20 " NA", Horizontal 1
+	Gui, 97: Show, % "x" w.x-10 " y" w.y-10 " w" 20 " h" 20 " NA", Vertical 2
+	Gui, 98: Show, % "x" e.x-10 " y" e.y-10 " w" 20 " h" 20 " NA", Horizontal 2
+	Gui, 99: Show, % "x" r.x-10 " y" r.y-10 " w" 20 " h" 20 " NA", Vertical 2
+	sleep 1000
+Return		
+		
+
+Qpix:
+	key:=A_ThisHotKey
+	dif:=(A_tickcount-start)
+	if (dif > 300){
+		start:=A_TickCount
+		skip := GetCursorPos()
+		DllCall("SetCursorPos", "int", %key%.x, "int",%key%.y)
+		scrollmod:=1
+		Send {LButton down}
+		Box_Centre(%key%.x, %key%.y, 30, 20, 2, 0)
+		Keywait %key%
+			{
+			scrollmod:=0
+			Send {LButton up}
+			DllCall("SetCursorPos", "int", skip.x, "int", skip.y)
+			Box_Hide()
+			Gui, 96: Show, % "x" 1100 " y" 0 " w" 70 " h" 20 " NA"
+			}
+		}	
+	else {
+		DllCall("SetCursorPos", "int", %key%.x, "int",%key%.y)
+		Send {LButton 2}
+		DllCall("SetCursorPos", "int", skip.x, "int", skip.y)
+		Keywait %key% 
+		}
+return
+
+altgrkey:
+	Send {LButton up}
+	dif:=(A_tickcount-start)
+	if (dif > 2000)
+		skip := GetCursorPos()
+	DllCall("SetCursorPos", "int", %key%.x, "int",%key%.y)
+	SetBatchLines, -1
+	SetWinDelay, -1
+	Loop {
+		newpos := GetCursorPos()
+		%key%.x := newpos.x, %key%.y := newpos.y
+		Box_Centre(%key%.x, %key%.y, 20, 20, 2, 1)
+		altstate := getkeystate("alt", p)
+		if (altstate=0) {
+			Box_Centre(%key%.x, %key%.y, 20, 20, 2, 1)
+			DllCall("SetCursorPos", "int", skip.x, "int",skip.y)
+			sleep 300
+			Box_Hide()
+			Gui, 96: Show, % "x" 1100 " y" 0 " w" 70 " h" 20 " NA"
+			break
+			}
+	   }
+	Keywait %key%
+Return
+
+
+
 
 ;ooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo
 ;ooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo
@@ -321,6 +393,46 @@ $f16::
 		}
 Return
 
+;-------------------------------------Qmode
+
+$\::
+	if Winactive("ahk_exe resolve.exe") {
+	Keywait, \, t0.3
+	if errorlevel {
+		gosub Qboxes
+		keywait \
+		Box_Hide()
+		Gui, 96: Show, % "x" 1100 " y" 0 " w" 70 " h" 20 " NA"
+		}
+	else {
+		Qmode:= (1-Qmode)**2
+		if (Qmode=1){
+			gosub Qboxes
+			Box_Hide()
+			Gui, 96: Show, % "x" 1080 " y" 0 " w" 70 " h" 20 " NA", Qbox
+			}
+		else {
+		Box_Destroy()
+		}
+	}
+	if (Qmode=0)
+		Box_Destroy()
+		}
+	else 
+		send \
+Return
+
+$+\::
+	if Winactive("ahk_exe resolve.exe") {
+		Box_Destroy()
+		; Gui, 94: destroy
+		gosub Qreset
+		Qmode:=0
+		}
+	else 
+		send +\
+Return
+
 
 ;-----------------------------------windowspy hold Menu key
 
@@ -331,6 +443,8 @@ $AppsKey::
 			scrollmod := 0
 			heldf1:=0
 			tooltip
+			if (Qmode=1)
+				Gui, 96: Show
 			page := pagecheck(calpix)
 			if (page = "") 
 				gosub underkill
@@ -356,6 +470,7 @@ $AppsKey::
 		}
 	else 
 		If (p = "0") 	{
+			Gui, 96:  Hide
 			tooltip,,,,2
 			}
 		Else  																
@@ -432,8 +547,8 @@ gui, add, text, y+2, % "vmax: " vmax
 ; gui, add, text, y+2, % boost 																									
 ; gui, add, text, y+2, % limit 												
 
-
-gui +LastFound +OwnDialogs +AlwaysOnTop
+; gui, -caption
+gui, +LastFound +OwnDialogs +AlwaysOnTop
 
 return
 
@@ -489,8 +604,10 @@ Scroll:
 return
 
 +^0::
-	keywait, 0, t.3												; Hasn't fucked up on me yet - maybe delete if keeps on playing ball?
-	if errorlevel {												; reset fastscroll
+	keywait, 0, t.3												; 
+	if errorlevel {		
+		start:=A_TickCount
+		diff=5000													; reset all (except qmod?)
 		scrollmod=:0
 		heldf1:=0
 		heldf20:=0
@@ -550,26 +667,7 @@ $f1::
 	else if WinActive("ahk_exe resolve.exe") {
 		send {f1}
 		Keywait, f1, t0.3
-			if errorlevel {	
-				; skip := GetCursorPos()													;like mousegetpos - DLL get+setcursorpos less buggy than native ahk
-				; ; if WinActive("Secondary Screen")
-					; ; gosub overkill
-				; if (skip.x>2046)
-					; DllCall("SetCursorPos", "int", 10, "int", 54) 						;setcursorpos doesn't work properly from second screen
-				; if (page="edit" or page="") { 
-					; if (skip.x>2046)
-						; DllCall("SetCursorPos", "int", 1110, "int", ruler.edy) 			;dllcalls set on 27.04.21 - revert to earlier for mousemove
-					; else	
-						; DllCall("SetCursorPos", "int", skip.x, "int", ruler.edy)
-					; }
-				; else if (page="color") 
-					; DllCall("SetCursorPos", "int", ruler.cox, "int", ruler.coy)
-				; else if (page="fusion")
-					; DllCall("SetCursorPos", "int", ruler.fux, "int", ruler.fuy)
-				; else if (page="fairlight")
-					; DllCall("SetCursorPos", "int", skip.x, "int", ruler.fay)
-				; else if (page="render")
-					; DllCall("SetCursorPos", "int", skip.x, "int", ruler.rey)		
+			if errorlevel {		
 				gosub movetoruler		
 				Send {lbutton down}
 				heldf1 := 1
@@ -707,7 +805,7 @@ return
 ;------------------------------------------------------------long press for blade tool
 $f21::
 	If !WinActive("ahk_exe Resolve.exe") {
-		if (A_Priorhotkey="$f21" && A_timesincepriorhotkey<2500)
+		if (A_Priorhotkey="$f21" && A_timesincepriorhotkey<2500)						;this could go back to inside keywait if causes probs
 			send {enter}
 		else {
 			keywait, f21, t.3
@@ -715,10 +813,11 @@ $f21::
 				IfWinNotExist, ahk_exe Resolve.exe
 					Run, C:\Program Files\Blackmagic Design\DaVinci Resolve\Resolve.exe
 				else {
-					coordmode tooltip screen
-					tooltip % page, calpix.fux-50, 1, 2
 					SetTitleMatchMode 2
 					WinActivate %davinci%
+					coordmode tooltip screen
+					tooltip % page, calpix.fux-50, 1, 2
+					Gui, 94: Show
 					}
 				}
 			else 	
@@ -742,6 +841,7 @@ $f21::
 		coordmode tooltip screen
 		tooltip % page, calpix.fux-50, 1, 2
 		}
+		
 Return
 
 #if WinActive("ahk_exe Resolve.exe")
@@ -753,9 +853,6 @@ f21 up::
 		}
 return	
 
-numpad1::
-	msgbox % A_Priorkey
-return
 
 #if
 
@@ -771,7 +868,7 @@ $!f21::
 		tooltip % page, calpix.fux-50, 1, 2
 		}
 	else
-		Sendinput ^{tab}
+		Sendinput {esc}
 Return
 
 
@@ -855,7 +952,7 @@ f23 up::
 	if (highlight=1) {
 		send {f23}
 	highlight:=0
-	tooltip
+	tooltip  
 		sleep 1000
 		send {esc}
 	}
@@ -1096,12 +1193,22 @@ Ins::
 	Else If (p = "00") { 						; double press
 		SetTitleMatchMode 2
 		IfWinNotExist Sticky Notes ahk_class ApplicationFrameWindow
+			{
 			Run, "C:\Users\tomba\OneDrive\Documents\AHK Shortcuts\Sticky Notes.lnk"
+			Sleep 1500
+			Winset, Alwaysontop, 1, Sticky Notes
+			Sleep 500
+			Winset, Alwaysontop, 1, Sticky Notes
+			Sleep 200
+			Winset, Alwaysontop, 1, Sticky Notes
+			Sleep 200
+			Winset, Alwaysontop, 1, Sticky Notes
+			}
 		
-		else if WinActive("Sticky Notes ahk_class ApplicationFrameWindow")
+		else ;if WinActive("Sticky Notes ahk_class ApplicationFrameWindow")
 			WinClose Sticky Notes ahk_class ApplicationFrameWindow
-		else
-			WinActivate Sticky Notes ahk_class ApplicationFrameWindow		
+		; else
+			; WinActivate Sticky Notes ahk_class ApplicationFrameWindow		
 		}
 	Else If (p = "01") 	{						; short + long presses
 		SetTitleMatchMode 2
@@ -1439,29 +1546,37 @@ return
 #if keyfredit
 
 Mbutton::
-	Coordmode pixel screen											; screen coordinates
-	coordmode mouse screen
-	Mousegetpos, x, y		; set edit timeline ruler position
+	; Coordmode pixel screen											; screen coordinates
+	; coordmode mouse screen
+	; Mousegetpos, x, y													; set edit timeline ruler position
+		butt := GetCursorPos()
 	if (page="edit") {
-		kf.edx:=x
-		kf.edy:=y
+		kf.edx:=butt.x
+		kf.edy:=butt.y
 		}
 	else if (page="color") {
-		kf.cox:=x
-		kf.coy:=y
+		kf.cox:=butt.x
+		kf.coy:=butt.y
 		}
 	else if (page="fusion")	 {
-		kf.fux:=x
-		kf.fuy:=y
+		kf.fux:=butt.x
+		kf.fuy:=butt.y
 		}
 	else if (page="fairlight") {
-		kf.fax:=x
-		kf.fay:=y
+		kf.fax:=butt.x
+		kf.fay:=butt.y
 		}
 	else if (page="render") {
-		kf.rex:=x
-		kf.rey:=y
+		kf.rex:=butt.x
+		kf.rey:=butt.y
 		}
+	else if (buttcal=1) {									;if buttcal doesnt play out, kill this
+	%k%.x:=butt.x
+	%k%.y:=butt.y
+	xpos:=butt.x
+	ypos:=butt.y
+	buttcal:=0
+	}
 	DllCall("SetCursorPos", "int", xpos, "int", ypos) 
 	keyfredit := false
 	tooltip
@@ -1501,3 +1616,71 @@ return
 return	
 
 #if
+
+#if (Qmode && winactive("ahk_exe resolve.exe"))
+
+q::   
+	goto Qpix
+return
+
+^!q::
+	key:="q"
+	goto altgrkey
+return
+
+w::   
+	goto Qpix
+return
+
+^!w::
+	key:="w"
+	goto altgrkey
+return
+
+e::   
+	goto Qpix
+return
+
+^!e::
+	key:="e"
+	goto altgrkey
+return
+
+r::   
+	goto Qpix
+return
+
+^!r::
+	key:="r"
+	goto altgrkey
+return
+
+; t::  
+	; goto Qpix
+; return
+
+; ^!t::
+	; key:="t"
+	; goto altgrkey
+; return
+
+; y::  
+	; goto Qpix
+; return
+
+; ^!y::
+	; key:="y"
+	; goto altgrkey
+; return
+
+#if
+
+
+
+
+
+
+
+
+
+
