@@ -15,15 +15,9 @@ inspector:={x: 1970, y: 34}
 
 
 
-; ~^!0:: reload
 
-;------------------------------------------------------------RESOLVE---------------------------
-;#ifWinActive ahk_exe Resolve.exe
-*/
 
-^+Delete::														; fix insert when it goes wrong
-	send {insert}
-return
+
 
 ;-----------------------------------G01  -  Buggy with modifiers for some reason...
 	
@@ -62,7 +56,9 @@ $Delete::
 	tooltip
 Return
 
-
+^+Delete::														; FIX INSERT!!!!! when it goes wrong
+	send {insert}
+return
 
 ;-----------------------------------G02
 

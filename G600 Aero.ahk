@@ -1,156 +1,16 @@
-﻿#NoEnv  ; Recommended for performance and compatibility with future AutoHotkey releases.
-; #Warn  ; Enable warnings to assist with detecting common errors.
-SendMode Input  ; Recommended for new scripts due to its superior speed and reliability.
-SetWorkingDir %A_ScriptDir%  ; Ensures a consistent starting directory.
-; #include C:\Users\tomba\OneDrive\Desktop\AutoHotKey\lib\Acc.ahk 	; can be included for Acc functions
-#include C:\Users\tomba\OneDrive\Desktop\AutoHotKey\lib\func.ahk  ; could be a library for useful functions (eg morse?)
-#MaxHotkeysPerInterval 120
+﻿#NoEnv
+SendMode Input
+SetWorkingDir %A_ScriptDir%				
+#include %A_ScriptDir%\var.ahk			; Resolve variables
+#include %A_ScriptDir%\lib\func.ahk  	; general function library
+#include %A_ScriptDir%\lib\Acc.ahk 		; can be included for Acc functions
+#include %A_ScriptDir%\resfunc.ahk  	; Resolve function library
+#MaxHotkeysPerInterval 120				; mostly for FASTSCROLL
 #SingleInstance Force
 
-; o o o o o o o o o o o o o o o INITIAL VALUE VARIABLES o o o o o o o o o o o o o o o o 
-
-davinci:= "DaVinci Resolve by Blackmagic Design"
 
 
-ruler  :=  {edx:0, 	edy:140, cox:600, coy:652, fux:770, fuy:480, fay:0, fay:160, rex:0, rey:780}						;ruler pos
-kf     :=  {edx:1990, edy:178, cox:1000, coy:10, fux:1000, fuy:10, fax:1000, fay:10, rex:1000, rey:10}					;keyframe buttons
-calpix :=  {mex:700, mey:1140, cutx:820, edx:940, fux:1060, cox:1180, fax:1300, rex:1420} 								;calibrate buttons                  									
-
-
-cal :=			0											;calibrate - appskey, !f1
-pixpicker := 	0											;calibrate - appskey
-cursed :=		0											;cursor, g19
-scrollmod := 	0											;g7, tweak button modifier
-heldf1 :=		0											;timeline ruler
-heldf20 :=		0											;switch davinci page
-pagescroll :=	0											;!g17 pgup pgdn scroll
-wheelarrow :=	0											;!g18 scroll windows
-undoscroll :=	0											;g19 undo-redo scroll
-highlight :=	0											;g13 color page
-xfastscroll :=	0											;pause fastscroll
-		
-   
-		;FASTSCROLL:
-timeout := 	600												; length of a scrolling session. time to accumulate boost. Default: 500. Recommended 400 - 1000.
-boost := 	30												; add boost factor. the higher the value, the slower to activate, and accumulate. disabled:0 Default: 20.															
-limit := 	60												; maximum number of scrolls sent per click, so doesn't overwhelm (ie max velocity) Default: 60.
-distance := 0												; Runtime variables. Do not modify.
-vmax := 	1
-
-numtweak:=0
-a:={x:500,y:500}
-
-Qmode:=0
-
-
-Qreset:
-start:=A_TickCount
-q:={x:480,y:1130}
-w:={x:540,y:1130}
-e:={x:1500,y:1130}
-r:={x:1095,y:988}
-return
-
-; t:={x:1620,y:1130}
-; y:={x:1095,y:988}
-
-
-; o o o o o o o o o o o o o o o FUNCTIONS o o o o o o o o o o o o o o o o 
-Coordmode pixel screen
-coordmode mouse screen
-
-
-pagecheck(x) {
-	; SetTitleMatchMode 2
-	; WinActivate %davinci%
-	Coordmode pixel screen																	
-	pixelgetcolor, editbutt, x.edx, x.mey
-	pixelgetcolor, cutbutt, x.cutx, x.mey
-	if (editbutt="0x000000" || cutbutt="0x000000")
-		pagevar := "edit"
-	else {
-		pixelgetcolor, colorbutt, x.cox, x.mey
-		if (colorbutt="0x000000")
-			pagevar := "color"
-		else {
-			pixelgetcolor, fusionbutt, x.fux, x.mey
-			if (fusionbutt="0x000000")
-			pagevar := "fusion"
-			else {
-				pixelgetcolor, fairlightbutt, x.fax, x.mey
-				if (fairlightbutt="0x000000")
-				pagevar := "fairlight"
-				else {
-					pixelgetcolor, mediabutt, x.mex, x.mey
-					if (mediabutt="0x000000")
-					pagevar := "media"
-					else {
-						pixelgetcolor, renderbutt, x.rex, x.mey
-						if (renderbutt="0x000000")
-						pagevar := "render"
-						}
-					}
-				}
-			}
-		}
-	tooltip % pagevar, x.fux-50, 1,2
-	return pagevar
-}
-
-yvalruler(pg,ed,col,fus,fair,ren) {														; return current ruler value
-	if (pg="edit")
-		rule:=ed	
-	if (pg="color")
-		rule:=col
-	if (pg="fusion")
-		rule:=fus
-	if (pg="fairlight")
-		rule:=fair
-	if (pg="render")
-		rule:=ren
-	return rule
-}
-
-keyframe(p,ex,ey,cx,cy,fx,fy,frx,fry,rx,ry) {
-	if (p="edit")
-		keyframe:={x:ex,y:ey}
-	else if (p="color")
-		keyframe:={x:cx,y:cy}
-	else if (p="fusion")
-		keyframe:={x:fx,y:fy}
-	else if (p="fairlight")
-		keyframe:={x:frx,y:fry}
-	else if (p="render")
-		keyframe:={x:rx,y:ry}	
-return keyframe
-}
- 
-Box_Init(C="yellow") {
-	loop, 6 {
-		Gui, % A_Index + 93 ": +ToolWindow -Caption +AlwaysOnTop +LastFound"
-		}
-	; Gui, 94: Color, % C
-	; Gui, 95: Color, % C
-	Gui, 96: Color, % C
-	Gui, 97: Color, % C
-	Gui, 98: Color, % C
-	Gui, 99: Color, % C
-	; gui, 94: font, s14 w1000, Consolas
-	; gui, 94: add, text, x4 y0, Q
-	; gui, 95: font, s14 w1000, Consolas
-	; gui, 95: add, text, x4 y0, W	
-	gui, 96: font, s14 w1000, Consolas
-	gui, 96: add, text, x4 y0, Q
-	gui, 97: font, s14 w1000, Consolas
-	gui, 97: add, text, x4 y0, W	
-	gui, 98: font, s14 w1000, Consolas
-	gui, 98: add, text, x4 y0, E
-	gui, 99: font, s14 w1000, Consolas
-	gui, 99: add, text, x4 y0, R							;Use Gui +LastFoundExist and then WinExist()
-}
-
-
-; o o o o o o o o o o o o o o o general gosubs, gotos  o o o o o o o o o o o o o o o o o 
+; o o o o o o o o o o o o o         GOSUB        GOTO        o o o o o o o o o o o o o o o o o 
 
 
 underkill:													;be careful with this - can bug up overkill for some reason
@@ -216,7 +76,7 @@ movetoruler:
 return
 
 
-cursing:
+cursing:														;  cursor change
     cursed :=!cursed
     If (cursed=0)
     {
@@ -236,10 +96,25 @@ cursing:
 Return
 
 
+StateYourCase:													;  *Capslock mod
+	If (A_ThisMenuItem = "Title") { 
+		StringLower text, text, T   ; Title case
+		}
+	Else If (A_ThisMenuItem = "Upper") { ;       
+		StringUpper text, text ; UpperCase
+		}
+	Else { ;       
+		StringLower text, text ; LowerCase
+		}
+	Clipboard := text
+	ClipWait 1
+	Send ^v
+Return 
+
+
+
 Qboxes:	
 	Box_Init()
-	; Gui, 94: Show, % "x" q.x " y" q.y " w" 20 " h" 20 " NA", Qbox
-	; Gui, 95: Show, % "x" w.x " y" w.y " w" 20 " h" 20 " NA", Bullseye
 	Gui, 96: Show, % "x" q.x-10 " y" q.y-10 " w" 20 " h" 20 " NA", Horizontal 1
 	Gui, 97: Show, % "x" w.x-10 " y" w.y-10 " w" 20 " h" 20 " NA", Vertical 2
 	Gui, 98: Show, % "x" e.x-10 " y" e.y-10 " w" 20 " h" 20 " NA", Horizontal 2
@@ -275,7 +150,7 @@ Qpix:
 		}
 return
 
-altgrkey:
+Qmove:
 	Send {LButton up}
 	dif:=(A_tickcount-start)
 	if (dif > 2000)
@@ -347,23 +222,9 @@ menu, testmenu, add, lower, stateyourcase
 menu, testmenu, show  
 return 
 
-StateYourCase:
-	If (A_ThisMenuItem = "Title") { 
-		StringLower text, text, T   ; Title case
-		}
-	Else If (A_ThisMenuItem = "Upper") { ;       
-		StringUpper text, text ; UpperCase
-		}
-	Else { ;       
-		StringLower text, text ; LowerCase
-		}
-	Clipboard := text
-	ClipWait 1
-	Send ^v
-Return 
 
 
-
+;------------------------------------- transparent
 
 !^Appskey::
 	winget, trans, transparent, a
@@ -373,25 +234,6 @@ Return
 		Winset, Transparent, OFF, A
 Return
 
-
-
-;-----------------------------------undo button; exists here for scrollmod reasons
-$f16::
-	if (scrollmod = 0)							;no long press for the moment....
-		send {f16}
-	else if (xnow = tweakx && ynow = tweaky) {
-		click
-		scrollmod := 0
-		sleep 50
-		send {f16}
-		}
-	else {
-		Coordmode mouse screen  
-		MouseGetPos xnow, ynow
-		if (xnow != tweakx || ynow != tweaky)
-			mousemove tweakx, tweaky
-		}
-Return
 
 ;-------------------------------------Qmode
 
@@ -493,7 +335,6 @@ Return
 	keyframe := keyframe(page, kf.edx, kf.edy, kf.cox, kf.coy, kf.fux, kf.fuy, kf.fax, kf.fay, kfrex, kf.rey)
 
 
-gui +LastFound +OwnDialogs +AlwaysOnTop
 Gui, new, ,VAR																			;
 gui, show, w274 h370 ,																	; makes gui exist + size, if wanna add position, can add x y before size
 gui, color, 292928,																		; background
@@ -543,16 +384,13 @@ gui, add, text, y+2, % "undoscroll: " undoscroll
 gui, add, text, y+2, % "highlight: " highlight
 gui, add, text, y+2, % "distance: " distance 											
 gui, add, text, y+2, % "vmax: " vmax 
-; gui, add, text, y+2, % timeout 											
-; gui, add, text, y+2, % boost 																									
-; gui, add, text, y+2, % limit 												
-
-; gui, -caption
-gui, +LastFound +OwnDialogs +AlwaysOnTop
-
+Gui, Add, Button, x100 y+20 Default w80 gKillVAR, OK
+gui +LastFound +OwnDialogs +AlwaysOnTop -caption
 return
 
-
+KillVAR:
+	Gui destroy
+Return
 
 ; o o o o o o o o o o o o o o o o o o o FASTSCROLL o o o o o o o o o o o o o o o o o o o o
 #if !WinActive("ahk_exe Resolve.exe")
@@ -640,11 +478,19 @@ return
 #if
 
 
+
+
 ;ooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo
-;ooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo
 
 
 
+
+; 	 0000 000   00000   00  00    00000    00000 
+; 	  0  0  0  0     0   0   0   0     0  0     0
+; 	  0  0  0  0     0   0   0    00000   0000000
+; 	  0  0  0  0     0   0   0        00  0      
+; 	  0  0  0  0     0   0  00   00   00  00    0
+; 	 000 00 00  00000    0000000  00000    00000 
 
 
 
@@ -655,8 +501,8 @@ return
 
 
 
-;------------------------------------------------------------ g9 mouse: new tab in chrome, new sheet in Notepad++ 
-;------------------------------------------------------------ double press for Razor blade tool
+;------------------------------------------------------------ g9    mouse: new tab in chrome, new sheet in Notepad++ 
+;------------------------------------------------------------     double press for Razor blade tool
 
 
 
@@ -690,8 +536,12 @@ f1 up::
 			mousegetpos skippedx, skippedy
 			Mousemove, skippedx, skip.y
 			}
-		else
-			Mousemove, skip.x, skip.y
+		else 
+			if (page="color") {
+			mousegetpos skippedx, skippedy
+			ruler.cox := skippedx
+			}
+		Mousemove, skip.x, skip.y
 		scrollmod := 0
 		heldf1:=0
 		tooltip
@@ -745,7 +595,7 @@ $!f1::
 Return
 
 
-;------------------------------------------------------------ g10 mouse: selects title bar in chrome, up one folder windows exp
+;------------------------------------------------------------ g10     mouse: selects title bar in chrome, up one folder windows exp
 $f20::
 	if WinActive("ahk_exe chrome.exe") {
 		Sendinput {f6}
@@ -763,7 +613,7 @@ $f20::
 			Keywait, f20, t0.3
 			if errorlevel {
 				skip := GetCursorPos()												;seems to work better than MouseGetPos
-				if WinActive("Secondary Screen")
+				if WinActive("Secondary Screen") 
 					gosub overkill
 				DllCall("SetCursorPos", "int", 10, "int", 54) 						;setcursorpos doesn't work properly from second screen
 				DllCall("SetCursorPos", "int", calpix.fax, "int", calpix.mey) 
@@ -797,12 +647,30 @@ f20 up::
 		}
 return	
 
-; numpad1::
-	; msgbox % A_Priorkey
-; return
 
-;------------------------------------------------------------G11 mouse: Launch Resolve / switch to Edit page
-;------------------------------------------------------------long press for blade tool
+$!f20::
+	if WinActive("ahk_exe resolve.exe") {
+		if (page:="color"){
+			keywait f20, t.05
+				skip := GetCursorPos()												;seems to work better than MouseGetPos
+				if WinActive("Secondary Screen") 
+					gosub overkill
+				DllCall("SetCursorPos", "int", 10, "int", 54) 						;setcursorpos doesn't work properly from second screen
+				DllCall("SetCursorPos", "int", mask.x, "int", mask.y) 	
+				choosetool:=true
+			keywait alt 
+				{
+				choosetool:=false
+				send {Lbutton}
+				DllCall("SetCursorPos", "int", skip.x, "int", skip.y) 
+			}
+		}
+	}
+return			
+		
+
+;------------------------------------------------------------ g11     mouse: Launch Resolve / switch to Edit page
+;------------------------------------------------------------      long press for blade tool
 $f21::
 	If !WinActive("ahk_exe Resolve.exe") {
 		if (A_Priorhotkey="$f21" && A_timesincepriorhotkey<2500)						;this could go back to inside keywait if causes probs
@@ -879,7 +747,7 @@ Return
 
 
 
-;------------------------------------------------------------ g12: back
+;------------------------------------------------------------ g12      back
 $f22::
 	if WinActive("ahk_exe Resolve.exe") {											
 		Sendinput {f22}
@@ -896,7 +764,7 @@ Return
 
 
 
-;------------------------------------------------------------ !G12 add keyframe
+;------------------------------------------------------------ !g12     add keyframe
 $!f22::
 	MouseGetPos, xpos, ypos							
 	keyframe := keyframe(page, kf.edx, kf.edy, kf.cox, kf.coy, kf.fux, kf.fuy, kf.fax, kf.fay, kf.rex, kf.rey)
@@ -915,7 +783,7 @@ Return
 	tooltip -- PIXPICKER --
 Return
 
-;------------------------------------------------------------ g13: reload
+;------------------------------------------------------------ g13      reload
 $f23::
 	if WinActive("ahk_exe Resolve.exe") {
 		send {f12}
@@ -926,15 +794,14 @@ $f23::
 				highlight:=1
 				tooltip bam
 				}
-				sleep 1000
-				send {esc}
-		
+			sleep 1000
+			send {esc}
 		 keywait f23
 		 }
 	else {
 		  if ((A_PriorHotkey = "f23 up" || A_PriorHotkey = "$f22") && A_TimeSincePriorHotkey < 500) {			
 			if WinActive("ahk_exe Notepad++.exe") 
-				Send ^+{f5}													;saved as RUN(f5): $(FULL_CURRENT_PATH)
+				Send ^+{f5}													;saved as RUN: $(FULL_CURRENT_PATH)
 			else															
 				Sendinput {esc}
 			}
@@ -953,15 +820,19 @@ f23 up::
 		send {f23}
 	highlight:=0
 	tooltip  
-		sleep 1000
-		send {esc}
+	sleep 1000
+	send {esc}
 	}
 Return
 
-;------------------------------------------------------------ g14: forward
+;------------------------------------------------------------ g14    forward
 $f24::
-	if WinActive("ahk_exe Resolve.exe") 
+	if WinActive("ahk_exe Resolve.exe") {
+		send {f12}
 		Sendinput {f24}
+		sleep 1000
+		send {esc}
+		}
 	else if WinActive("ahk_exe notepad++.exe")	
 		sendinput ^q
 	else {
@@ -976,7 +847,7 @@ $f24::
 		}
 Return
 
-;------------------------------------------------------------ !G14 close tab
+;------------------------------------------------------------ !g14	 close tab
 $!f24::
 	if WinActive("ahk_exe chrome.exe")
 		Sendinput l
@@ -991,9 +862,9 @@ Return
 ;------------------------------------------------------------						888 888  x  888
 
 
-;------------------------------------------------------------ G15:ctrl
+;------------------------------------------------------------ g15  		ctrl
  	
-;------------------------------------------------------------ G16:shift
+;------------------------------------------------------------ g16 		shift
 
 
 $+wheelup::
@@ -1019,41 +890,45 @@ Return
 
 
 
-;------------------------------------------------------------ G17 speedy scroll
+;------------------------------------------------------------ g17 	speedy scroll
 
 
 
 
 #if !WinActive("ahk_exe Resolve.exe")								;still horrible - Ralt does not play ball. pgup,dn often want to switch tabs
 
-^Ralt::
-	if !WinActive("ahk_exe Resolve.exe") {
-	send {ralt down}
-	pagescroll:=true
-	tooltip ▲`n▼
-	}
-Return
+; ^Ralt::
+	; send {ralt down}
+	; pagescroll:=true
+	; tooltip ▲`n▼
+; Return
 
-#if pagescroll
+; #if pagescroll
 
 ^!WheelUp::
+	if winactive("ahk_exe notepad++.exe") 
+		Send ^{f2}
+	else
 		Send {pgup}
 Return
 
 ^!WheelDown::
+	if winactive("ahk_exe notepad++.exe") 
+		Send ^{f3}
+	else
 		Send {pgdn}
 Return
 
 
-^Ralt up::
-	send {ralt up}
-	pagescroll:=false
-	tooltip
-Return
+; ^Ralt up::
+	; send {ralt up}
+	; pagescroll:=false
+	; tooltip
+; Return
 
 #if
 
-;------------------------------------------------------------ !G17
+;------------------------------------------------------------ !g17
 
 
 
@@ -1064,8 +939,8 @@ Return
 
 
 
-;------------------------------------------------------------ G18: click:start; long click:show desktop
-;------------------------------------------------------------ !G18: !click:scroll through windows;  long !click: see available windows    
+;------------------------------------------------------------ g18  	 click:start; long click:show desktop
+;------------------------------------------------------------!g18	 !click:scroll through windows;  long !click: see available windows    
 
 rwin::
 	keywait, rwin, t.3
@@ -1113,7 +988,7 @@ return
 
 #if
 
-;------------------------------------------------------------ G19:see open windows
+;----------------------------------------------------------- g19 		see open windows
 
 
 >^c::
@@ -1172,7 +1047,7 @@ return
 #if
 
 
-;------------------------------------------------------------ G20 mouse launch Explorer / cycle Explorer tabs
+;----------------------------------------------------------- g20 	mouse launch Explorer / cycle Explorer tabs
 
 Ins:: 
 	p := Morse()									; how about unmorsing it??
@@ -1256,6 +1131,12 @@ Return
 ;------------------------------------------------------------							888.o88888
 
 
+
+
+
+
+
+
 ;------------------------------------------------------------ Alt wheel skips ahead youtube
 
 $!WheelDown::
@@ -1312,7 +1193,7 @@ return
 ;  ooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo
 ;  ooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo
 
-; o o o o o o o o o o o o o o o TWEAK BUTTON MODIFIER G7 o o o o o o o o o o o o o o o
+; o o o o o o o o o o o o o o o        SCROLLMOD        o o o o o o o o o o o o o o o
 
 Scrolllock::
 	if WinActive("ahk_exe chrome.exe") 
@@ -1454,7 +1335,7 @@ Return
 #if
 
 
-; o o o o o o o o o o o o o o o o o o o CALIBRATE PIXPICKER o o o o o o o o o o o o o o o o 
+; o o o o o o o o o o o o o o o o       CALIBRATE PIXPICKER     o o o o o o o o o o o o o o o o 
 
 #if pixpicker
 
@@ -1541,6 +1422,27 @@ return
 
 #if
 
+#if choosetool
+
+!wheelup::
+f20 & wheelup::
+	Coordmode mouse screen
+	Mousegetpos toolx, tooly
+	if (toolx > 900)
+		mousemove toolx-toolskipper, tooly
+return
+
+!wheeldown::
+f20 & wheeldown::
+	Coordmode mouse screen
+	Mousegetpos toolx, tooly
+	if (toolx < 1300)
+		mousemove toolx+toolskipper, tooly
+return
+
+#if
+
+
 ; o o o o o o o o o o o o o o o o o SELECT KEYFRAME BUTTON CLICK RESOLVE o o o o o o o o o o
 
 #if keyfredit
@@ -1617,6 +1519,9 @@ return
 
 #if
 
+
+; o o o o o o o o o o o o o o o o o o o     Qmode       o o o o o o o o o o o o o o o o 
+
 #if (Qmode && winactive("ahk_exe resolve.exe"))
 
 q::   
@@ -1625,7 +1530,7 @@ return
 
 ^!q::
 	key:="q"
-	goto altgrkey
+	goto Qmove
 return
 
 w::   
@@ -1634,7 +1539,7 @@ return
 
 ^!w::
 	key:="w"
-	goto altgrkey
+	goto Qmove
 return
 
 e::   
@@ -1643,7 +1548,7 @@ return
 
 ^!e::
 	key:="e"
-	goto altgrkey
+	goto Qmove
 return
 
 r::   
@@ -1652,35 +1557,925 @@ return
 
 ^!r::
 	key:="r"
-	goto altgrkey
+	goto Qmove
 return
 
-; t::  
-	; goto Qpix
-; return
-
-; ^!t::
-	; key:="t"
-	; goto altgrkey
-; return
-
-; y::  
-	; goto Qpix
-; return
-
-; ^!y::
-	; key:="y"
-	; goto altgrkey
-; return
 
 #if
 
 
 
+;  000                       00                                        00 
+;    0                        0                                         0 
+;    0                        0                                         0 
+;    0 000   00000   000  000 0 0000     0000    0000     00 000   0000 0 
+;    0 0    0     0   0    0  00    0  0     0       0     00     0    00 
+;    00     0000000    0  0   0     0  0     0   00000     0      0     0 
+;    0 0    0          0  0   0     0  0     0  0    0     0      0     0 
+;    0  0   00    0     00    00    0  0     0  0   00     0      0    00 
+;  000 0000   0000      00   00 0000     0000    000 00  000000    0000 00
+;                       0                                                     
+;                       0                                                 
+;                    00000                                                
+  
+
+    
+
+
+;-----------------------------------G01  -  Buggy with modifiers for some reason...
+	
+$Backspace::
+	if WinActive("ahk_exe resolve.exe") {
+	KeyWait, backspace, T.07
+	If ErrorLevel {
+		sleepadd++											;equation to machinegun bs faster upon holding. still too slow... what holds it back? t0.7! fix with gosub??
+		sleepvar := 100/(sleepadd*sleepadd)
+		tooltip % sleepvar
+		Send {backspace}
+		Sleep % sleepvar
+		}
+	}
+	else 
+		send {backspace}
+	
+Return
+
+Backspace up::
+	if WinActive("ahk_exe resolve.exe") {
+	KeyWait, backspace
+	sleepadd := 0
+	Sleep 100
+	tooltip
+	}
+return
+
+$Delete::
+	Send {delete}
+	KeyWait, Delete, T.6
+		If ErrorLevel {
+			Send ^{Delete}	
+			}
+	KeyWait, Delete
+	tooltip
+Return
+
+^+Delete::														; FIX INSERT!!!!! when it goes wrong
+	send {insert}
+return
+
+;-----------------------------------G02
+
+$f2::
+	KeyWait, F2, T.4
+		If ErrorLevel { 
+			send q							;empty
+			}
+		Else {
+			Send {f2}
+			}
+	KeyWait, F2
+	tooltip,
+Return
+
+$!f2::
+	KeyWait, f2, T.07
+		Send !c
+	KeyWait, f2
+Return
+
+;-----------------------------------G03; printscreen is a bit faulty i think (releases maybe?). this is a workaround
+
+
+; $f3::												; open close inspector - only works with dual screen
+	; winactivate % davinci
+	; WinGet, hWnd, ID, A
+	; oAcc := Acc_Get("Object", "4.2.2.3.1.1.1.3.1.3", 0, "ahk_id " hWnd)
+	; oAcc.accDoDefaultAction(0)   2.2.3.1.1.1.1.2.5
+	; oAcc := ""				   2.2.3.1.1.1.2.1.3	
+; Return
+
+$f3::												
+	skip := GetCursorPos()	
+	DllCall("SetCursorPos", "int", inspector.x, "int", inspector.y)
+	click
+	DllCall("SetCursorPos", "int", skip.x, "int", skip.y)
+Return
+
+
+
+$!f3::												;layer node, clip attributes
+	KeyWait, f3, T.07
+	Send !l								
+	KeyWait, f3
+Return
+
+
+
+;-----------------------------------G04
+
+
+$f4::
+	KeyWait, F4, T.4
+	If ErrorLevel { 
+		SoundBeep, 1500, 40
+		Send s										;this speed stuff needs lots of work or death
+		timer := True
+		Speed:=0
+		X:=1
+		SetFormat, IntegerFast, D
+		SetTimer, Go, -8000
+		}
+	Else {
+		Send {f4}
+		}
+	KeyWait, F4
+	tooltip,
+Return
+
+Go:
+	Send {x}			;WTF IS THIS? ENTER?
+Reset:
+	SoundBeep, 800, 40
+	timer := False
+Return					;Refer to speed control subworld 
+
+!NumpadEnter::
+^NumpadEnter::
+return
+
+$!f4::
+	KeyWait, f4, T.07
+	Send ^h
+	KeyWait, f4
+Return
+
+	
+;-----------------------------------G05
+; $Appskey::
+; KeyWait, Appskey, T.1
+	; If ErrorLevel {
+		                          ; ; still empty
+		
+		; tooltip, lah
+		; Sleep 100
+		; tooltip	
+		; }
+	; KeyWait, Appskey,
+; Return
+
+$f5::
+
+	KeyWait, F5, T.4
+	If ErrorLevel { 
+		SoundBeep, 1500, 40
+									;still empty
+		}
+	Else {
+		Send {f5}
+		}
+	KeyWait, F5
+	tooltip,
+Return
+
+
+;-----------------------------------G06
+$Numpaddiv::
+KeyWait, Numpaddiv, T.1
+If ErrorLevel {
+	Send {Numpaddiv}
+	tooltip, lah
+	Sleep 100
+	tooltip	
+	}
+KeyWait, Numpaddiv
+Return
+
+$f6::
+
+	KeyWait, F6, T.4
+	If ErrorLevel { 
+		SoundBeep, 1500, 40
+									;still empty
+		}
+	Else {
+		Send {f6}
+		}
+	KeyWait, F6
+	tooltip,
+Return
+
+;-----------------------------------G07        -7,8,9,Del are different - action happens immediately on Deep press
+$Numpadsub::
+KeyWait, Numpadsub, T.07
+tooltip, lah
+If ErrorLevel {
+	Send {Numpadsub}
+	Sleep 100	
+	}
+KeyWait, Numpadsub
+tooltip
+Return
+
+
+$f7::
+Send {f7} ;             <- this
+KeyWait, f7, T.4
+If ErrorLevel {
+
+	Send +{f7 3}
+	tooltip	
+	}
+KeyWait, f7
+Return
+
+;-----------------------------------G08       -7,8,9,Del are different - action happens immediately on Deep press
+$Pause::
+KeyWait, Pause, T.07
+tooltip, lah
+If ErrorLevel {
+	Send {Pause}
+	Sleep 100	
+	}
+KeyWait, Pause
+tooltip
+Return
+
+
+$f8::
+Send {f8}
+KeyWait, f8, T.3
+If ErrorLevel {
+
+	Send +y
+	tooltip	
+	}
+KeyWait, f8
+Return
+
+;-----------------------------------G09        -7,8,9,Del are different - action happens immediately on Deep press
+$Numpadadd::
+KeyWait, Numpadadd, T.07
+tooltip, lah
+If ErrorLevel {
+	Send {Numpadadd}
+	Sleep 100	
+	}
+KeyWait, Numpadadd
+tooltip
+Return
+
+
+$f9::
+Send {f9}
+KeyWait, f9, T.4
+If ErrorLevel {
+
+	Send +{f9 3}
+	tooltip	
+	}
+KeyWait, f9
+Return
+
+
+;-----------------------------------G10
+$Numpadmult::
+KeyWait, Numpadmult, T.1
+tooltip, lah
+If ErrorLevel {
+									;still empty
+	Sleep 100
+	tooltip	
+	}
+KeyWait, Numpadmult,
+tooltip	
+Return
+
+$f10::
+
+	KeyWait, f10, T.4
+	If ErrorLevel { 
+		SoundBeep, 1500, 40
+									;still empty
+		}
+	Else {
+		Send {f10}
+		}
+	KeyWait, f10
+	tooltip,
+Return
+
+$!Numpadmult::
+return
+
+$!f10::
+	KeyWait, f10, T.07
+	Send !{o}
+	KeyWait, f10
+Return
+
+;-----------------------------------G11
+
+$f11::
+
+	KeyWait, f11, T.4
+	If ErrorLevel { 
+		SoundBeep, 1500, 40
+		                    ; still blank
+		}
+	Else 
+		Send {f11}
+	KeyWait, f11
+	tooltip,
+Return
+/* 
+; $!Numpad1::  ;             if it ain't broke? registers as !num1 in resolve 
+; return
+
+$!f11::
+	KeyWait, f11, T.07
+	Send !{f11}
+	KeyWait, f11
+Return
+*/
+;-----------------------------------G12
+
+
+$f12::
+
+	KeyWait, f12, T.4
+	If ErrorLevel { 
+		SoundBeep, 1500, 40
+		                    ; still blank
+		}
+	Else {
+		Send {f12}
+		}
+	KeyWait, f12
+	tooltip,
+Return
+/*
+; $!Numpad2::              if it ain't broke? registers as !num2 in resolve 
+; return
+
+$!f12::
+	KeyWait, f12, T.07
+	Send !{f12}
+	KeyWait, f12
+Return
+*/
+;-----------------------------------G13 (immediate press)
+; $Numpad3::
+; KeyWait, Numpad3, T.07
+; tooltip, lah
+; If ErrorLevel {
+	; Send {esc}			;{deselect}
+	; Sleep 100	
+	; }
+; KeyWait, Numpad3
+; tooltip
+; Return
+
+
+$f13::
+Send {f13}				;select clip at playhead
+
+KeyWait, f13, T.2
+If ErrorLevel {
+	Send l
+	Send {esc}			;selection follows playhead
+	}
+KeyWait, f13
+tooltip
+Return
+
+; $!Numpad3::
+; return
+
+$!f13::
+	KeyWait, f13, T.07
+	Send !{f13}
+	KeyWait, f13
+Return
+
+;-----------------------------------G14 
+
+
+$f14::
+Send {f14}
+KeyWait, f14, T.2
+If ErrorLevel {
+				
+	}
+KeyWait, f14
+tooltip
+Return
+
+
+$!f14::
+	KeyWait, f14, T.07
+	Send !{f14}		  ;toggle slip slide
+	KeyWait, f14
+Return
+
+
+f14 & Pgup::
+Send !{left}
+Return
+
+f14 & Pgdn::
+Send !{right}
+Return
+
+f14 & up::
+Send !{up}
+Return
+
+f14 & down::
+Send !{down}
+Return
+
+f14 & left::
+Send !{pgup}
+Return
+
+f14 & right::
+Send !{pgdn}
+Return
+
+;-----------------------------------G15   (immediate press)
+
+
+
+$f15::
+Send +y						;select edit point
+Send {f15}					;cycle edit point types
+
+KeyWait, f15
+tooltip
+Return
+
+; $!Numpad5::
+; return
+
+$!f15::
+	KeyWait, f15, T.07
+	Send !{f15}				;toggle slip slide
+	KeyWait, f15
+Return
+
+f15 & Pgup::
+Send !{pgup}
+Return
+
+f15 & Pgdn::
+Send !{pgdn}
+Return
+
+
+
+;-----------------------------------G16  undo button; 
+
+
+$f16::
+	if (scrollmod = 0)							;no long press for the moment....
+		send {f16}
+	else if (xnow = tweakx && ynow = tweaky) {
+		click
+		scrollmod := 0
+		sleep 50
+		send {f16}
+		}
+	else {
+		Coordmode mouse screen  
+		MouseGetPos xnow, ynow
+		if (xnow != tweakx || ynow != tweaky)
+			mousemove tweakx, tweaky
+		}
+Return
+
+
+;-----------------------------------G17
+; $Numpad7::
+; KeyWait, Numpad7, T.1
+; tooltip, lah
+; If ErrorLevel {
+	; Send c
+	; Sleep 100
+	; tooltip	
+	; }
+; KeyWait, Numpad7,
+; tooltip	
+; Return
+
+$f17::
+	tooltip, DOOOONG!
+	KeyWait, f17, T.4
+	If ErrorLevel { 
+		SoundBeep, 1500, 40
+		Send ???
+		}
+	Else {
+		Sendinput {f17}
+		}
+	KeyWait, f17
+	tooltip,
+Return
+
+
+;-----------------------------------G18
+; $Numpad8::
+; KeyWait, Numpad8, T.1
+; tooltip, lah
+; If ErrorLevel {
+	; Send x
+	; Sleep 100
+	; tooltip	
+	; }
+; KeyWait, Numpad8,
+; tooltip	
+; Return
+
+$f18::
+	tooltip, DOOOONG!
+	KeyWait, f18, T.4
+	If ErrorLevel { 
+		SoundBeep, 1500, 40
+								;empty. modifier?
+		}
+	Else {
+		Sendinput {f18}
+		}
+	KeyWait, f18
+	tooltip,
+Return
 
 
 
 
 
+;-----------------------------------G19
+; $Numpad9::
+; KeyWait, Numpad9, T.1
+; tooltip, lah
+; If ErrorLevel {
+	; Send v
+	; Sleep 100
+	; tooltip	
+	; }
+; KeyWait, Numpad9,
+; tooltip	
+; Return
+
+$f19::
+	tooltip, DOOOONG!
+	KeyWait, f19, T.4
+	If ErrorLevel { 
+		SoundBeep, 1500, 40
+								;empty. modifier?
+		}
+	Else {
+		Sendinput {f19}
+		}
+	KeyWait, f19
+	tooltip,
+Return
+
+; $^Numpad9::
+; return
+
+$^f19::
+	KeyWait, f19, T.07
+	Send ^{f19}
+	KeyWait, f19
+Return
+
+;--------------------------------------------------scroll click + ctrl add vol keyframe
+^+l::																
+	MouseGetPos, xpos, ypos
+	DllCall("SetCursorPos", "int", 1990, "int", 178 ) 				;
+	sleep 10
+	click
+	DllCall("SetCursorPos", "int", xpos, "int", ypos) 
+return
+
+;--------------------------------------------------Flagland modifier
+
+; Numpad6::
+	; numpaddotfix := 1
+	; flagland := true
+	; if (A_priorhotkey="Numpad6 up" && A_timesincepriorhotkey<300) {
+	; Num6toggle := 1
+	; tooltip % chr(2) chr(2) chr(2)
+	; }
+	; else if (num6toggle = 1) {
+		; num6toggle := 0
+		; tooltip
+		; }
+	; else 
+		; tooltip % chr(2) chr(2) chr(2)
+; return
+
+; Numpad6 up::
+	; numpaddotfix := 0
+	; if (Num6toggle != 1) {
+	; flagland := false
+	; tooltip
+	; }
+	; else 
+; return
+
+
+; / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
+
+
+; o o o o o o o o o o o o o o  SPEED CONTROL SUBWORLD  o o o o o o o o o o o o o o o 
+
+
+#If timer 
+
+backspace::
+
+PrintScreen::
+NumpadEnter::
+AppsKey::
+Numpaddiv::
+Numpadsub::
+Pause::
+Numpadadd::
+Numpadmult::
+Return
+
+f7::										;reduce speed
+	KeyWait, %A_Thishotkey%, T.08
+	If ErrorLevel {
+		If (speed>100 or speed=0 or speed<=-100)
+			Speed:=Speed-100
+		Else if (speed>0 && speed<=100) {
+			X:=X+1
+			Speed:= Speed*((X-1)/X)
+			}
+		Else if (speed>-100 && speed<0) {
+			X:=X-1
+			Speed:= Speed*((X+1)/X)
+			}
+		Sleep 200
+		Sendinput {Shift down}{Left 5}{Shift up}
+		Sleep 40
+		Shortspeed:= Substr(Speed, 1, 5)
+		Send %Shortspeed%
+		}
+	KeyWait, %A_Thishotkey%
+
+pgup::										;reduce speed
+	If (speed>100 or speed=0 or speed<=-100)
+		Speed:=Speed-100
+	Else if (speed>0 && speed<=100) {
+		X:=X+1
+		Speed:= Speed*((X-1)/X)
+		}
+	Else if (speed>-100 && speed<0) {
+		X:=X-1
+		Speed:= Speed*((X+1)/X)
+		}
+	Sleep 200
+	Sendinput {Shift down}{Left 5}{Shift up}
+	Sleep 40
+	Shortspeed:= Substr(Speed, 1, 5)
+	Send %Shortspeed%
+Return
+
+f8::										;flip sign
+	KeyWait, %A_Thishotkey%, T.08
+	If ErrorLevel {
+		If (speed!=0) { 
+		Speed:=-Speed
+		}
+		Else if (speed=0) {
+		Speed:=33.3333
+		}
+		Shortspeed:= Substr(Speed, 1, 5)
+		Sendinput {Shift down}{Left 5}{Shift up}
+		Send %Shortspeed%
+		}
+	KeyWait, %A_Thishotkey%
+
+^l::										;flip sign
+
+	If (speed!=0) { 
+	Speed:=-Speed
+	}
+	Else if (speed=0) {
+	Speed:=33.3333
+	}
+	Shortspeed:= Substr(Speed, 1, 5)
+	Sendinput {Shift down}{Left 5}{Shift up}
+	Send %Shortspeed%
+Return
+
+
+
+f9::										;increase speed
+	KeyWait, %A_Thishotkey%, T.08
+	If ErrorLevel {
+		If (speed>=100 or speed=0 or speed<-100)
+			Speed:=Speed+100
+		Else if (speed>0 && speed<100) {
+			X:=X-1
+			Speed:= Speed*((X+1)/X)
+			}
+		Else if (speed>=-100 && speed<0) {
+			X:=X+1
+			Speed:= Speed*((X-1)/X)
+			}
+		Sleep 200
+		Sendinput {Shift down}{Left 5}{Shift up}
+		Sleep 40
+		Shortspeed:= Substr(Speed, 1, 5)
+		Send %Shortspeed%
+		}
+	KeyWait, %A_Thishotkey%
+return
+
+pgdn::										;increase speed
+	If (speed>=100 or speed=0 or speed<-100)
+		Speed:=Speed+100
+	Else if (speed>0 && speed<100) {
+		X:=X-1
+		Speed:= Speed*((X+1)/X)
+		}
+	Else if (speed>=-100 && speed<0) {
+		X:=X+1
+		Speed:= Speed*((X-1)/X)
+		}
+	Sleep 200
+	Sendinput {Shift down}{Left 5}{Shift up}
+	Sleep 40
+	Shortspeed:= Substr(Speed, 1, 5)
+	Send %Shortspeed%	
+return
+
+f11::										;set -600
+	KeyWait, %A_Thishotkey%, T.08
+	If ErrorLevel {
+		Speed:=-600
+		Sendinput {Shift down}{Left 5}{Shift up}
+		Send %Speed%
+		}
+	KeyWait, %A_Thishotkey%
+return
+
+f12::										;set -100
+	KeyWait, %A_Thishotkey%, T.08
+	If ErrorLevel {
+		Speed:=-100
+		Sendinput {Shift down}{Left 5}{Shift up}
+		Send %Speed%
+		}
+	KeyWait, %A_Thishotkey%
+return
+
+f13::										;set 0
+	KeyWait, %A_Thishotkey%, T.08
+	If ErrorLevel {
+		Speed:=0
+		Sendinput {Shift down}{Left 5}{Shift up}
+		Send %Speed%
+		}
+	KeyWait, %A_Thishotkey%
+return
+
+
+f14::										;set 100
+	KeyWait, %A_Thishotkey%, T.08
+	If ErrorLevel {
+		Speed:=100
+		Sendinput {Shift down}{Left 5}{Shift up}
+		Send %Speed%
+		}
+	KeyWait, %A_Thishotkey%
+return
+
+
+f15::										;set 600
+	KeyWait, %A_Thishotkey%, T.08
+	If ErrorLevel {
+		Speed:=800
+		Sendinput {Shift down}{Left 5}{Shift up}
+		Send %Speed%
+		}
+	KeyWait, %A_Thishotkey%
+return
+
+
+Delete::
+	KeyWait, %A_Thishotkey%, T.08
+	If ErrorLevel {
+		Send X
+		}
+	KeyWait, %A_Thishotkey%
+	SetTimer, Go, Off
+	Gosub, Reset
+Return
+
+Space::
+	Send {Enter}
+	SetTimer, Go, Off
+	Gosub, Reset
+Return
+
+#If ;---------------------------------------------End of Speed control
+
+
+
+#If flagland ; o o o o o o o o o o o o o  FLAGLAND SUBWORLD  o o o o o o work out the buttons that must stay... g13?
+
+
+
+PrintScreen::
+NumpadEnter::
+AppsKey::
+Numpaddiv::
+Numpadsub::
+Pause::
+Numpadadd::
+Numpadmult::
+
+Return
+
+
+
+f2:: 						;clip colour
+Send W
+KeyWait, f2, t.3
+if errorlevel
+send q
+KeyWait, f2
+tooltip % chr(24) chr(24) chr(24)
+return
+
+f3:: 
+Send E
+KeyWait, f3, t.1
+KeyWait, f3
+tooltip % chr(24) chr(24) chr(24)
+return
+
+f4:: 
+Send R
+KeyWait, f4, t.1
+KeyWait, f4
+tooltip % chr(24) chr(24) chr(24)
+return
+
+f5:: 
+Send T
+KeyWait, f5, t.1
+KeyWait, f5
+tooltip % chr(24) chr(24) chr(24)
+return
+
+
+f11:: 						;flags
+	keywait, f11, t.1
+	if (clearflags=1) {
+		send ^O
+		clearflags:=0
+		}
+	else {
+		Send ^o
+		clearflags:=1
+		}
+	keywait f11
+return
+
+
+f12:: 						
+	keywait, f12, t.1
+	if (clearflags=2) {
+		send ^O
+		clearflags:=0
+		}
+	else {
+		Send ^p
+		clearflags:=2
+		}
+	keywait f12
+return
+
+f14:: 						;markers edit to toggle
+Send ^w
+KeyWait, f14, t.1
+KeyWait, f14
+tooltip % chr(24) chr(24) chr(24)
+return
+
+f15:: 
+Send ^q
+KeyWait, f15, t.1
+KeyWait, f15
+tooltip % chr(24) chr(24) chr(24)
+return
+
+#if
 
 
