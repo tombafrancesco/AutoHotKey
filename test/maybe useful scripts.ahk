@@ -101,7 +101,7 @@ Text:="|<Flip flop buttons>*59$56.zzzzzzzzzy00Dzzw00T001zzy003bzzDzzDzyNzTnzznsD
      FindText.MouseTip(ok[i].x, ok[i].y)
 	 
 	 
-; return
+return
 
 
 ;-------------------------probably the way forward - universal pixchanger

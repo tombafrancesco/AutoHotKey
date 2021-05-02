@@ -5,175 +5,209 @@ SetWorkingDir %A_ScriptDir%
 #include %A_ScriptDir%\lib\func.ahk  	; general function library
 #include %A_ScriptDir%\lib\Acc.ahk 		; can be included for Acc functions
 #include %A_ScriptDir%\resfunc.ahk  	; Resolve function library
+#include %A_ScriptDir%\GoSubG600.ahk
 #MaxHotkeysPerInterval 120				; mostly for FASTSCROLL
 #SingleInstance Force
 
+; dontrungosubs() {
+; return
+; }
+
+; ; o o o o o o o o o o o o o         GOSUB        GOTO        o o o o o o o o o o o o o o o o o 
 
 
-; o o o o o o o o o o o o o         GOSUB        GOTO        o o o o o o o o o o o o o o o o o 
+; underkill:													;be careful with this - can bug up overkill for some reason
+	; if WinActive("ahk_exe resolve.exe") {
+	; SetTitleMatchMode 2
+	; WinActivate %davinci%
+	; page:=pagecheck(calpix)
+	; coordmode tooltip screen
+	; tooltip % page, calpix.fux-50, 1, 2
+	; }
+; return
 
 
-underkill:													;be careful with this - can bug up overkill for some reason
-	if WinActive("ahk_exe resolve.exe") {
-	SetTitleMatchMode 2
-	WinActivate %davinci%
-	page:=pagecheck(calpix)
-	coordmode tooltip screen
-	tooltip % page, calpix.fux-50, 1, 2
-	}
-return
+; overkill:													;sometimes pagecheck fails. this should fix problem 99%. 
+	; if WinActive("ahk_exe resolve.exe") {
+	; DllCall("SetCursorPos", "int", 1860, "int", 14) 
+	; mouseclick
+	; page := pagecheck(calpix)
+	; if (page = "") {
+		; DllCall("SetCursorPos", "int", 1860, "int", 14) 
+		; mouseclick
+		; sleep 20
+		; DllCall("SetCursorPos", "int", 300, "int", 1140) 
+		; mouseclick
+		; page := pagecheck(calpix)
+		; if (page = "") {
+			; winactivate davinci
+			; sleep 50
+			; DllCall("SetCursorPos", "int", 1860, "int", 14) 
+			; mouseclick
+			; sleep 50
+			; DllCall("SetCursorPos", "int", 300, "int", 1140) 
+			; mouseclick
+			; page := pagecheck(calpix)
+			; }
+		; }
+	; mousemove 1000,500
+	; tooltip % page, calpix.fux-50, 1,2
+	; if (page = "")
+		; msgbox problem
+	; }
+; return
 
 
-overkill:													;sometimes pagecheck fails. this should fix problem 99%. 
-	if WinActive("ahk_exe resolve.exe") {
-	DllCall("SetCursorPos", "int", 1860, "int", 14) 
-	mouseclick
-	page := pagecheck(calpix)
-	if (page = "") {
-		DllCall("SetCursorPos", "int", 1860, "int", 14) 
-		mouseclick
-		sleep 20
-		DllCall("SetCursorPos", "int", 300, "int", 1140) 
-		mouseclick
-		page := pagecheck(calpix)
-		if (page = "") {
-			winactivate davinci
-			sleep 50
-			DllCall("SetCursorPos", "int", 1860, "int", 14) 
-			mouseclick
-			sleep 50
-			DllCall("SetCursorPos", "int", 300, "int", 1140) 
-			mouseclick
-			page := pagecheck(calpix)
-			}
-		}
-	mousemove 1000,500
-	tooltip % page, calpix.fux-50, 1,2
-	if (page = "")
-		msgbox problem
-	}
-return
+; Scroll:															; FASTSCROLL
+	; if (xfastscroll=0) {
+		; t := A_TimeSincePriorHotkey
+		; if (A_PriorHotkey = A_ThisHotkey && t < timeout) {
+			; distance++													; Remember # of scrolls in current direction
+			; v := (t < 80 && t > 1) ? (250.0 / t) - 1 : 1				; Calculate acceleration using a 1/x curve
+			; if (boost > 1 && distance > boost) {						; Apply boost
+				; if (v > vmax)											; Hold top speed  achieved during this boost
+					; vmax := v
+				; else
+					; v := vmax
+				; v *= distance / boost
+				; }
+			; v := (v > 1) ? ((v > limit) ? limit : Floor(v)) : 1			; Validate
+
+			; MouseClick, %A_ThisHotkey%, , , v
+			; }
+		; else  {
+			; distance := 0												; Combo broken, so reset session variables
+			; vmax := 1
+			; MouseClick %A_ThisHotkey%
+			; }
+		; }
+	; else  {
+	; distance := 0												; Combo broken, so reset session variables
+	; vmax := 1
+	; MouseClick %A_ThisHotkey%
+	; }
+; return
 
 
-movetoruler:
-	skip := GetCursorPos()													;like mousegetpos - DLL get+setcursorpos less buggy than native ahk
-	if (skip.x>2046)
-		DllCall("SetCursorPos", "int", 10, "int", 54) 						;setcursorpos doesn't work properly from second screen
-	if (page="edit" or page="") { 
-		if (skip.x>2046)
-			DllCall("SetCursorPos", "int", 1110, "int", ruler.edy) 			;dllcalls set on 27.04.21 - revert to earlier for mousemove
-		else	
-			DllCall("SetCursorPos", "int", skip.x, "int", ruler.edy)
-		}
-	else if (page="color") 
-		DllCall("SetCursorPos", "int", ruler.cox, "int", ruler.coy)
-	else if (page="fusion")
-		DllCall("SetCursorPos", "int", ruler.fux, "int", ruler.fuy)
-	else if (page="fairlight")
-		DllCall("SetCursorPos", "int", skip.x, "int", ruler.fay)
-	else if (page="render")
-		DllCall("SetCursorPos", "int", skip.x, "int", ruler.rey)		
-return
+; movetoruler:
+	; skip := GetCursorPos()													;like mousegetpos - DLL get+setcursorpos less buggy than native ahk
+	; if (skip.x>2046)
+		; DllCall("SetCursorPos", "int", 10, "int", 54) 						;setcursorpos doesn't work properly from second screen
+	; if (page="edit" or page="") { 
+		; if (skip.x>2046)
+			; DllCall("SetCursorPos", "int", 1110, "int", ruler.edy) 			;dllcalls set on 27.04.21 - revert to earlier for mousemove
+		; else	
+			; DllCall("SetCursorPos", "int", skip.x, "int", ruler.edy)
+		; }
+	; else if (page="color") 
+		; DllCall("SetCursorPos", "int", ruler.cox, "int", ruler.coy)
+	; else if (page="fusion")
+		; DllCall("SetCursorPos", "int", ruler.fux, "int", ruler.fuy)
+	; else if (page="fairlight")
+		; DllCall("SetCursorPos", "int", skip.x, "int", ruler.fay)
+	; else if (page="render")
+		; DllCall("SetCursorPos", "int", skip.x, "int", ruler.rey)		
+; return
 
 
-cursing:														;  cursor change
-    cursed :=!cursed
-    If (cursed=0)
-    {
-        Cursor1 = Red_Pointer.cur
-        CursorHandle1 := DllCall("LoadCursorFromFile", Str, Cursor1)
-        Cursors = 32512,
-        Loop, Parse, Cursors, `, 
-        { 
-            DllCall("SetSystemCursor", Uint, CursorHandle1, Int, A_Loopfield) 
-        }
-    }
-    Else If (cursed=1)
-    {
-        SPI_SETCURSORS := 0x57
-        DllCall( "SystemParametersInfo", UInt,SPI_SETCURSORS, UInt,0, UInt,0, UInt,0 )
-    }
-Return
+; cursing:														;  cursor change
+    ; cursed :=!cursed
+    ; If (cursed=0)
+    ; {
+        ; Cursor1 = Red_Pointer.cur
+        ; CursorHandle1 := DllCall("LoadCursorFromFile", Str, Cursor1)
+        ; Cursors = 32512,
+        ; Loop, Parse, Cursors, `, 
+        ; { 
+            ; DllCall("SetSystemCursor", Uint, CursorHandle1, Int, A_Loopfield) 
+        ; }
+    ; }
+    ; Else If (cursed=1)
+    ; {
+        ; SPI_SETCURSORS := 0x57
+        ; DllCall( "SystemParametersInfo", UInt,SPI_SETCURSORS, UInt,0, UInt,0, UInt,0 )
+    ; }
+; Return
 
 
-StateYourCase:													;  *Capslock mod
-	If (A_ThisMenuItem = "Title") { 
-		StringLower text, text, T   ; Title case
-		}
-	Else If (A_ThisMenuItem = "Upper") { ;       
-		StringUpper text, text ; UpperCase
-		}
-	Else { ;       
-		StringLower text, text ; LowerCase
-		}
-	Clipboard := text
-	ClipWait 1
-	Send ^v
-Return 
+; StateYourCase:													;  *Capslock mod
+	; If (A_ThisMenuItem = "Title") { 
+		; StringLower text, text, T   ; Title case
+		; }
+	; Else If (A_ThisMenuItem = "Upper") { ;       
+		; StringUpper text, text ; UpperCase
+		; }
+	; Else { ;       
+		; StringLower text, text ; LowerCase
+		; }
+	; Clipboard := text
+	; ClipWait 1
+	; Send ^v
+; Return 
 
 
 
-Qboxes:	
-	Box_Init()
-	Gui, 96: Show, % "x" q.x-10 " y" q.y-10 " w" 20 " h" 20 " NA", Horizontal 1
-	Gui, 97: Show, % "x" w.x-10 " y" w.y-10 " w" 20 " h" 20 " NA", Vertical 2
-	Gui, 98: Show, % "x" e.x-10 " y" e.y-10 " w" 20 " h" 20 " NA", Horizontal 2
-	Gui, 99: Show, % "x" r.x-10 " y" r.y-10 " w" 20 " h" 20 " NA", Vertical 2
-	sleep 1000
-Return		
+; Qboxes:	
+	; Box_Init()
+	; Gui, 96: Show, % "x" q.x-10 " y" q.y-10 " w" 20 " h" 20 " NA", Horizontal 1
+	; Gui, 97: Show, % "x" w.x-10 " y" w.y-10 " w" 20 " h" 20 " NA", Vertical 2
+	; Gui, 98: Show, % "x" e.x-10 " y" e.y-10 " w" 20 " h" 20 " NA", Horizontal 2
+	; Gui, 99: Show, % "x" r.x-10 " y" r.y-10 " w" 20 " h" 20 " NA", Vertical 2
+	; sleep 1000
+; Return		
 		
 
-Qpix:
-	key:=A_ThisHotKey
-	dif:=(A_tickcount-start)
-	if (dif > 300){
-		start:=A_TickCount
-		skip := GetCursorPos()
-		DllCall("SetCursorPos", "int", %key%.x, "int",%key%.y)
-		scrollmod:=1
-		Send {LButton down}
-		Box_Centre(%key%.x, %key%.y, 30, 20, 2, 0)
-		Keywait %key%
-			{
-			scrollmod:=0
-			Send {LButton up}
-			DllCall("SetCursorPos", "int", skip.x, "int", skip.y)
-			Box_Hide()
-			Gui, 96: Show, % "x" 1100 " y" 0 " w" 70 " h" 20 " NA"
-			}
-		}	
-	else {
-		DllCall("SetCursorPos", "int", %key%.x, "int",%key%.y)
-		Send {LButton 2}
-		DllCall("SetCursorPos", "int", skip.x, "int", skip.y)
-		Keywait %key% 
-		}
-return
+; Qpix:
+	; key:=A_ThisHotKey
+	; dif:=(A_tickcount-start)
+	; if (dif > 300){
+		; start:=A_TickCount
+		; skip := GetCursorPos()
+		; DllCall("SetCursorPos", "int", %key%.x, "int",%key%.y)
+		; scrollmod:=1
+		; Send {LButton down}
+		; Box_Centre(%key%.x, %key%.y, 30, 20, 2, 0)
+		; Keywait %key%
+			; {
+			; scrollmod:=0
+			; Send {LButton up}
+			; DllCall("SetCursorPos", "int", skip.x, "int", skip.y)
+			; Box_Hide()
+			; Gui, 96: Show, % "x" 1100 " y" 0 " w" 70 " h" 20 " NA"
+			; }
+		; }	
+	; else {
+		; DllCall("SetCursorPos", "int", %key%.x, "int",%key%.y)
+		; Send {LButton 2}
+		; DllCall("SetCursorPos", "int", skip.x, "int", skip.y)
+		; Keywait %key% 
+		; }
+; return
 
-Qmove:
-	Send {LButton up}
-	dif:=(A_tickcount-start)
-	if (dif > 2000)
-		skip := GetCursorPos()
-	DllCall("SetCursorPos", "int", %key%.x, "int",%key%.y)
-	SetBatchLines, -1
-	SetWinDelay, -1
-	Loop {
-		newpos := GetCursorPos()
-		%key%.x := newpos.x, %key%.y := newpos.y
-		Box_Centre(%key%.x, %key%.y, 20, 20, 2, 1)
-		altstate := getkeystate("alt", p)
-		if (altstate=0) {
-			Box_Centre(%key%.x, %key%.y, 20, 20, 2, 1)
-			DllCall("SetCursorPos", "int", skip.x, "int",skip.y)
-			sleep 300
-			Box_Hide()
-			Gui, 96: Show, % "x" 1100 " y" 0 " w" 70 " h" 20 " NA"
-			break
-			}
-	   }
-	Keywait %key%
-Return
+; Qmove:
+	; Send {LButton up}
+	; dif:=(A_tickcount-start)
+	; if (dif > 2000)
+		; skip := GetCursorPos()
+	; DllCall("SetCursorPos", "int", %key%.x, "int",%key%.y)
+	; SetBatchLines, -1
+	; SetWinDelay, -1
+	; Loop {
+		; newpos := GetCursorPos()
+		; %key%.x := newpos.x, %key%.y := newpos.y
+		; Box_Centre(%key%.x, %key%.y, 20, 20, 2, 1)
+		; altstate := getkeystate("alt", p)
+		; if (altstate=0) {
+			; Box_Centre(%key%.x, %key%.y, 20, 20, 2, 1)
+			; DllCall("SetCursorPos", "int", skip.x, "int",skip.y)
+			; sleep 300
+			; Box_Hide()
+			; Gui, 96: Show, % "x" 1100 " y" 0 " w" 70 " h" 20 " NA"
+			; break
+			; }
+	   ; }
+	; Keywait %key%
+; Return
 
 
 
@@ -392,7 +426,25 @@ KillVAR:
 	Gui destroy
 Return
 
+
+;ooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo
+
+
+;           00                        00  
+;            0                         0  
+;   000  000 00000    0000    0000     0  
+;    0    0  00  00  0    0  0    0    0  
+;    0 00 0  0    0  000000  000000    0   
+;    0 0000  0    0  0       0         0  
+;     00 0   0    0  00      00        0   
+;     0  0  000  000  00000   00000  00000 
+
+
+
+
 ; o o o o o o o o o o o o o o o o o o o FASTSCROLL o o o o o o o o o o o o o o o o o o o o
+
+
 #if !WinActive("ahk_exe Resolve.exe")
 
 Process, Priority, , H
@@ -411,41 +463,13 @@ WheelDown::
 		Send {wheeldown}
 return
 
-Scroll:
-	if (xfastscroll=0) {
-		t := A_TimeSincePriorHotkey
-		if (A_PriorHotkey = A_ThisHotkey && t < timeout) {
-			distance++													; Remember how many times we've scrolled in the current direction
-			v := (t < 80 && t > 1) ? (250.0 / t) - 1 : 1				; Calculate acceleration factor using a 1/x curve
-			if (boost > 1 && distance > boost) {						; Apply boost
-				if (v > vmax)											; Hold onto the highest speed we've achieved during this boost
-					vmax := v
-				else
-					v := vmax
-				v *= distance / boost
-				}
-			v := (v > 1) ? ((v > limit) ? limit : Floor(v)) : 1			; Validate
 
-			MouseClick, %A_ThisHotkey%, , , v
-			}
-		else  {
-			distance := 0												; Combo broken, so reset session variables
-			vmax := 1
-			MouseClick %A_ThisHotkey%
-			}
-		}
-	else  {
-	distance := 0												; Combo broken, so reset session variables
-	vmax := 1
-	MouseClick %A_ThisHotkey%
-	}
-return
 
 +^0::
 	keywait, 0, t.3												; 
 	if errorlevel {		
 		start:=A_TickCount
-		diff=5000													; reset all (except qmod?)
+		diff=5000										; reset all (except qmod?)
 		scrollmod=:0
 		heldf1:=0
 		heldf20:=0
@@ -453,29 +477,199 @@ return
 		wheelarrow:=0
 		undoscroll:=0
 		cursed:=0
-		distance:=0												; Runtime variable
-		vmax:= 1												; Runtime variable
+		distance:=0										; Runtime variable
+		vmax:= 1										; Runtime variable
 		t:=0
 		v:=0
 		xfastscroll:=0
 		tooltip RESET
 		}
 	else{
-		xfastscroll:=(xfastscroll-1)**2									; pause unpause
+		xfastscroll:=(xfastscroll-1)**2					; pause unpause
 		if (xfastscroll=1)
 			tooltip ■												
 		else 
-			tooltip ▶													;play ►
+			tooltip ▶									;play ►
 			}
 	sleep 500
 	tooltip
 return
 
 
+#if
 
 
+;-------------------------------------------------------	 ! Wheel 			skips ahead youtube
+
+$!WheelUp::
+	if WinActive("ahk_exe chrome.exe") 
+		Sendinput {up}
+	else if WinActive("ahk_exe spotify.exe")
+		send +{left}	
+	else
+		Sendinput !{WheelUp}
+Return
+
+
+$!WheelDown::
+	if WinActive("ahk_exe chrome.exe") 
+		Sendinput {down}
+	else if WinActive("ahk_exe spotify.exe")
+		send +{right}
+	else
+		Sendinput !{WheelDown}
+Return
+
+
+;----------------------------------------------------		+ Wheel
+
+
+$+wheelup::
+	if WinActive("ahk_exe resolve.exe") 
+		send +{wheelup}
+	else if WinActive("ahk_exe chrome.exe") 
+		send +{wheelup}
+	else
+		send {wheelleft}
+Return
+
+
+$+wheeldown::
+	if WinActive("ahk_exe resolve.exe")
+		send +{wheeldown}
+	else if WinActive("ahk_exe chrome.exe") 
+		send +{wheeldown}
+	else
+		send {wheelright}
+Return
+
+
+;----------------------------------------------------		^ Wheel - still unused in most pages in resolve!
+ 	
+; $^wheelup::
+	; if WinActive("ahk_exe resolve.exe" && page=edit)
+; Return
+
+; $^wheeldown::
+	; if WinActive("ahk_exe resolve.exe" && page=edit)
+; Return
+
+;-----------------------------------------------------		^! Wheel   ( Alt Gr )
+
+
+
+
+#if !WinActive("ahk_exe Resolve.exe")							;needs this to play ball with resolve
+
+^!WheelUp::
+
+	if winactive("ahk_exe notepad++.exe") 
+		Send ^{f2}
+	else
+		Send {left}
+Return
+
+^!WheelDown::
+	if winactive("ahk_exe notepad++.exe") 
+		Send ^{f3}
+	else
+		Send {right}
+Return
 
 #if
+
+
+
+
+;--------------------------------------------------	 		Wheel L & R
+
+$home::
+if !WinActive("ahk_exe resolve.exe") 						
+	Sendinput {Media_Prev}
+else 
+	Send {home}
+Return
+	
+!home::
+if WinActive("ahk_exe notepad++.exe") 
+	send ^1
+return
+
+$end::
+	keywait end, t.3
+	
+	if errorlevel {
+		SendMessage,0x112,0xF170,2,,Program Manager
+		DllCall("LockWorkStation")
+		Sleep 1000
+		SendMessage,0x112,0xF170,2,,Program Manager
+		}
+	else if !WinActive("ahk_exe resolve.exe")
+		Sendinput {Media_Next}
+	else
+		send {end}
+	keywait end
+Return
+
+!end::
+if WinActive("ahk_exe notepad++.exe") 
+	send ^2
+return
+
+<!<^0::
+	sendinput {Media_Play_Pause}
+return
+
+
+; o o o o o o o o o o o o o o o        SCROLLMOD        	G7       o o o o o o o o o o o o o o o
+
+Scrolllock::
+	if (A_thishotkey!=A_priorhotkey || A_timesincepriorhotkey>300) {
+		if (heldf21!=1)					;g11 trick: get rid of the click
+			Send {Lbutton down}
+		Coordmode, mouse, screen
+		If (scrollmod=0) 
+			MouseGetPos, tweakx, tweaky
+		KeyWait, Scrolllock, T.3
+			If ErrorLevel {
+				if (scrollmod = 2) {
+					scrollmod := 1
+					tooltip ◀  ▶										; ◀ ▶    bug▼ 
+					}
+				Else {
+					scrollmod := 2
+					tooltip ▲`n▼
+					}
+				}
+			Else if (scrollmod = 0) {
+				Scrollmod := 1
+				tooltip ◀  ▶
+				}
+			else {
+			Scrollmod := 0
+			Send {Lbutton up}
+			tooltip
+			}
+		KeyWait, Scrolllock
+		}
+	Else {					;double click
+		Send {Lbutton up}
+		Scrollmod := 2
+		sleep 500
+		Send !{Alt down}{LButton}{alt up}
+		Sleep 500
+		Send {Lbutton down}
+		tooltip ▲`n▼	
+		}
+Return
+
+!Scrolllock::
+	Send {Alt down}{LButton}{alt up}
+	Sleep 500
+	Send {Lbutton down}
+	scrollmod := 2
+	tooltip ▲`n▼	
+Return
 
 
 
@@ -488,10 +682,10 @@ return
 ; 	 0000 000   00000   00  00    00000    00000 
 ; 	  0  0  0  0     0   0   0   0     0  0     0
 ; 	  0  0  0  0     0   0   0    00000   0000000
-; 	  0  0  0  0     0   0   0        00  0      
-; 	  0  0  0  0     0   0  00   00   00  00    0
-; 	 000 00 00  00000    0000000  00000    00000 
-
+; 	  0  0  0  0     0   0   0         0  0      
+; 	  0  0  0  0     0   0  00   00    0  00    0
+; 	 000 0 000  00000    0000000  00000    00000 
+;                                                                    /
 
 
 ;------------------------------------------------------------						|  x  888 888 888
@@ -501,7 +695,8 @@ return
 
 
 
-;------------------------------------------------------------ g9    mouse: new tab in chrome, new sheet in Notepad++ 
+;--------------------------------------------------------	g9    mouse: new tab in chrome, new sheet in Notepad++ 
+
 ;------------------------------------------------------------     double press for Razor blade tool
 
 
@@ -569,7 +764,7 @@ Return
 
 
 
-;------------------------------------------------------------ !g9 mouse: cycle back tab 
+;-------------------------------------------------------	!g9    mouse: cycle back tab 
 
 $^!f1::
 	if WinActive("ahk_exe Resolve.exe") {
@@ -595,20 +790,24 @@ $!f1::
 Return
 
 
-;------------------------------------------------------------ g10     mouse: selects title bar in chrome, up one folder windows exp
+;-------------------------------------------------------	g10     mouse: selects title bar in chrome, up one folder windows exp
+
 $f20::
 	if WinActive("ahk_exe chrome.exe") {
-		Sendinput {f6}
-		Keywait, f20, t0.2
+		Keywait, f20, t0.25
 		if errorlevel {
 			heldf20 := 1
 			choosebook := true
-			send {f6 2}
+			send {f6 3}
 			}
+		else
+			send {f11}
 		Keywait, f20
 		}
 	else if WinActive("ahk_exe explorer.exe") 
 		Sendinput !{up}
+	else if WinActive("ahk_exe notepad++.exe") 	
+		Send {f11}
 	else if WinActive("ahk_exe resolve.exe") {							
 			Keywait, f20, t0.3
 			if errorlevel {
@@ -647,6 +846,7 @@ f20 up::
 		}
 return	
 
+;-------------------------------------------------------	!g10    cycle color tools
 
 $!f20::
 	if WinActive("ahk_exe resolve.exe") {
@@ -668,8 +868,8 @@ $!f20::
 	}
 return			
 		
+;-------------------------------------------------------	g11     mouse: Launch Resolve / switch to Edit page
 
-;------------------------------------------------------------ g11     mouse: Launch Resolve / switch to Edit page
 ;------------------------------------------------------------      long press for blade tool
 $f21::
 	If !WinActive("ahk_exe Resolve.exe") {
@@ -725,6 +925,7 @@ return
 #if
 
 ;------------------------------------------------------------ !G11 mouse: Resolve switch to Edit page / otherwise cycle back tab 
+
 $!f21::
 	if WinActive("ahk_exe Resolve.exe") {
 		Sendinput +4
@@ -747,7 +948,8 @@ Return
 
 
 
-;------------------------------------------------------------ g12      back
+;------------------------------------------------------		g12      back
+
 $f22::
 	if WinActive("ahk_exe Resolve.exe") {											
 		Sendinput {f22}
@@ -758,13 +960,32 @@ $f22::
 		}
 	else if WinActive("ahk_exe notepad++.exe")	
 		sendinput ^k
-	else if (WinActive("ahk_exe chrome.exe") || WinActive("ahk_exe explorer.exe")) 
+	else if (WinActive("ahk_exe chrome.exe") || WinActive("ahk_exe explorer.exe")) {
+		keywait, f22, t.3 											;ripple delete during playback. not perfect
+		if errorlevel {
+			skip := GetCursorPos()
+			WinGet, hWnd, ID, A
+			oAcc := Acc_Get("Object", "4.1.2.1.2.1", 0, "ahk_id " hWnd)
+			oRect := Acc_Location(oAcc)
+			DllCall("SetCursorPos", "int", oRect.x + oRect.w/2 , "int", oRect.y+oRect.h/2)
+			oAcc := ""
+			Send {RButton}
+			backhistory := true
+			}
+		else
 			Sendinput !{left}
+		keywait, f22
+		if (backhistory=true) {
+			send {Enter}
+			backhistory := false
+			DllCall("SetCursorPos", "int", skip.x, "int",  skip.y)
+			}
+		}
 Return
 
 
 
-;------------------------------------------------------------ !g12     add keyframe
+;----------------------------------------------------		!g12     add keyframe
 $!f22::
 	MouseGetPos, xpos, ypos							
 	keyframe := keyframe(page, kf.edx, kf.edy, kf.cox, kf.coy, kf.fux, kf.fuy, kf.fax, kf.fay, kf.rex, kf.rey)
@@ -783,7 +1004,8 @@ Return
 	tooltip -- PIXPICKER --
 Return
 
-;------------------------------------------------------------ g13      reload
+;-----------------------------------------------------		g13      reload
+
 $f23::
 	if WinActive("ahk_exe Resolve.exe") {
 		send {f12}
@@ -825,7 +1047,8 @@ f23 up::
 	}
 Return
 
-;------------------------------------------------------------ g14    forward
+;----------------------------------------------------		g14    forward
+
 $f24::
 	if WinActive("ahk_exe Resolve.exe") {
 		send {f12}
@@ -847,7 +1070,7 @@ $f24::
 		}
 Return
 
-;------------------------------------------------------------ !g14	 close tab
+;---------------------------------------------------		!g14	 close tab
 $!f24::
 	if WinActive("ahk_exe chrome.exe")
 		Sendinput l
@@ -856,81 +1079,6 @@ $!f24::
 Return
 
 
-;------------------------------------------------------------						888 888  x  888
-;------------------------------------------------------------						888 888  x  888
-;------------------------------------------------------------						888 888  x  888
-;------------------------------------------------------------						888 888  x  888
-
-
-;------------------------------------------------------------ g15  		ctrl
- 	
-;------------------------------------------------------------ g16 		shift
-
-
-$+wheelup::
-	if WinActive("ahk_exe resolve.exe") 
-		send +{wheelup}
-	else if WinActive("ahk_exe chrome.exe") 
-		send +{wheelup}
-	else
-		send {wheelleft}
-Return
-
-
-$+wheeldown::
-	if WinActive("ahk_exe resolve.exe")
-		send +{wheeldown}
-	else if WinActive("ahk_exe chrome.exe") 
-		send +{wheeldown}
-	else
-		send {wheelright}
-Return
-
-
-
-
-
-;------------------------------------------------------------ g17 	speedy scroll
-
-
-
-
-#if !WinActive("ahk_exe Resolve.exe")								;still horrible - Ralt does not play ball. pgup,dn often want to switch tabs
-
-; ^Ralt::
-	; send {ralt down}
-	; pagescroll:=true
-	; tooltip ▲`n▼
-; Return
-
-; #if pagescroll
-
-^!WheelUp::
-	if winactive("ahk_exe notepad++.exe") 
-		Send ^{f2}
-	else
-		Send {pgup}
-Return
-
-^!WheelDown::
-	if winactive("ahk_exe notepad++.exe") 
-		Send ^{f3}
-	else
-		Send {pgdn}
-Return
-
-
-; ^Ralt up::
-	; send {ralt up}
-	; pagescroll:=false
-	; tooltip
-; Return
-
-#if
-
-;------------------------------------------------------------ !g17
-
-
 
 ;------------------------------------------------------------						888 888 888  x   |
 ;------------------------------------------------------------						888 888 888  x   |
@@ -939,8 +1087,7 @@ Return
 
 
 
-;------------------------------------------------------------ g18  	 click:start; long click:show desktop
-;------------------------------------------------------------!g18	 !click:scroll through windows;  long !click: see available windows    
+;------------------------------------------------------		g18  	 click:start; long click:show desktop
 
 rwin::
 	keywait, rwin, t.3
@@ -950,6 +1097,9 @@ rwin::
 			Send {rwin}
 	keywait rwin
 return
+
+
+;------------------------------------------------------		!g18	 !click:scroll through windows;  long !click: see available windows    
 
 $!rwin::
 	Send !#{tab}
@@ -988,7 +1138,7 @@ return
 
 #if
 
-;----------------------------------------------------------- g19 		see open windows
+;----------------------------------------------------		g19 		see open windows
 
 
 >^c::
@@ -1047,7 +1197,7 @@ return
 #if
 
 
-;----------------------------------------------------------- g20 	mouse launch Explorer / cycle Explorer tabs
+;------------------------------------------------------		g20 	mouse launch Explorer / cycle Explorer tabs
 
 Ins:: 
 	p := Morse()									; how about unmorsing it??
@@ -1125,128 +1275,12 @@ Return
 
 
 
-;------------------------------------------------------------							888°888888
-;------------------------------------------------------------							888   °888
-;------------------------------------------------------------							888   .o88
-;------------------------------------------------------------							888.o88888
-
-
-
-
-
-
-
-
-;------------------------------------------------------------ Alt wheel skips ahead youtube
-
-$!WheelDown::
-	if WinActive("ahk_exe chrome.exe") 
-		Sendinput {right}
-	else if WinActive("ahk_exe spotify.exe")
-		send +{right}
-	else
-		Sendinput !{WheelDown}
-Return
-
-$!WheelUp::
-	if WinActive("ahk_exe chrome.exe") 
-		Sendinput {left}
-	else if WinActive("ahk_exe spotify.exe")
-		send +{left}	
-	else
-		Sendinput !{WheelUp}
-Return
-
-
-
-;---------------------------------------------------------- mouse wheel L,R
-$home::
-if !WinActive("ahk_exe resolve.exe") 						
-	Sendinput {Media_Prev}
-else 
-	Send {home}
-Return
-	
-
-$end::
-	keywait end, t.3
-	
-	if errorlevel {
-		SendMessage,0x112,0xF170,2,,Program Manager
-		DllCall("LockWorkStation")
-		Sleep 1000
-		SendMessage,0x112,0xF170,2,,Program Manager
-		}
-	else if !WinActive("ahk_exe resolve.exe")
-		Sendinput {Media_Next}
-	else
-		send {end}
-	keywait end
-Return
-
-<!<^0::
-	sendinput {Media_Play_Pause}
-return
 
 
 ;  ooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo
 ;  ooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo
+;  ooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo7
 ;  ooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo
-
-; o o o o o o o o o o o o o o o        SCROLLMOD        o o o o o o o o o o o o o o o
-
-Scrolllock::
-	if WinActive("ahk_exe chrome.exe") 
-		Sendinput {f11}
-	else {
-	if (A_thishotkey!=A_priorhotkey || A_timesincepriorhotkey>300) {
-		if (heldf21!=1)					;g11 trick: get rid of the click
-			Send {Lbutton down}
-		Coordmode, mouse, screen
-		If (scrollmod=0) 
-			MouseGetPos, tweakx, tweaky
-		KeyWait, Scrolllock, T.3
-			If ErrorLevel {
-				if (scrollmod = 2) {
-					scrollmod := 1
-					tooltip ◀  ▶										; ◀ ▶    bug▼ 
-					}
-				Else {
-					scrollmod := 2
-					tooltip ▲`n▼
-					}
-				}
-			Else if (scrollmod = 0) {
-				Scrollmod := 1
-				tooltip ◀  ▶
-				}
-			else {
-			Scrollmod := 0
-			Send {Lbutton up}
-			tooltip
-			}
-		KeyWait, Scrolllock
-		}
-	Else {					;double click
-		Send {Lbutton up}
-		Scrollmod := 2
-		sleep 500
-		Send !{Alt down}{LButton}{alt up}
-		Sleep 500
-		Send {Lbutton down}
-		tooltip ▲`n▼	
-		}
-	}
-Return
-
-!Scrolllock::
-	Send {Alt down}{LButton}{alt up}
-	Sleep 500
-	Send {Lbutton down}
-	scrollmod := 2
-	tooltip ▲`n▼	
-Return
-
 
 
 ; o o o o o o o o o o o o o o o TWEAK SCROLLMOD o o o o o o o o o o o o o o o
@@ -1402,7 +1436,7 @@ return
 
 #if
 
-; o o o o o o o o o o o o o o o o o o o CHOOSE PAGE RESOLVE o o o o o o o o o o o o o o o o 
+; o o o o o o o o o o o o o o o o o o   CHOOSE PAGE RESOLVE   o o o o o o o o o o o o o o o 
 
 #if choosepage
 
@@ -1443,7 +1477,7 @@ return
 #if
 
 
-; o o o o o o o o o o o o o o o o o SELECT KEYFRAME BUTTON CLICK RESOLVE o o o o o o o o o o
+; o o o o o o o o o o o o o o o o   SELECT KEYFRAME BUTTON CLICK RESOLVE   o o o o o o o o o
 
 #if keyfredit
 
@@ -1492,7 +1526,7 @@ return
 
 #if
 
-; o o o o o o o o o o o o o o o o o o o CHOOSE BOOKMARK CHROME o o o o o o o o o o o o o o o o 
+; o o o o o o o o o o o o o o o o o     CHOOSE BOOKMARK CHROME    o o o o o o o o o o o o o o o 
 
 #if choosebook
 
@@ -1519,8 +1553,25 @@ return
 
 #if
 
+; o o o o o o o o o o o o o o o o o o o     BACK HISTORY       o o o o o o o o o o o o o o o o 
 
-; o o o o o o o o o o o o o o o o o o o     Qmode       o o o o o o o o o o o o o o o o 
+#if backhistory
+
+f22 & wheelup::
+	; if (a_thishotkey=a_priorhotkey && a_timesincepriorhotkey<100)			;make it faster
+		; send {left}
+	send {up}
+return
+
+f22 & wheeldown::
+	; if (a_thishotkey=a_priorhotkey && a_timesincepriorhotkey<100)
+		; send {right}
+	send {down}
+return
+
+#if
+
+; o o o o o o o o o o o o o o o o o o o     Q-Mode       o o o o o o o o o o o o o o o o 
 
 #if (Qmode && winactive("ahk_exe resolve.exe"))
 
@@ -2114,6 +2165,7 @@ Return
 
 
 ;-----------------------------------G19
+
 ; $Numpad9::
 ; KeyWait, Numpad9, T.1
 ; tooltip, lah
@@ -2150,6 +2202,7 @@ $^f19::
 Return
 
 ;--------------------------------------------------scroll click + ctrl add vol keyframe
+
 ^+l::																
 	MouseGetPos, xpos, ypos
 	DllCall("SetCursorPos", "int", 1990, "int", 178 ) 				;
