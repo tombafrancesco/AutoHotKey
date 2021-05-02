@@ -13,9 +13,6 @@ SetWorkingDir %A_ScriptDir%
 #MaxHotkeysPerInterval 120				; mostly for FASTSCROLL
 #SingleInstance Force
 
-; DontRunGosubs() {
-; return
-; }
 
 ; o o o o o o o o o o o o o         GOSUB        GOTO        o o o o o o o o o o o o o o o o o 
 
@@ -211,4 +208,65 @@ Qmove:
 			}
 	   }
 	Keywait %key%
+Return
+
+
+
+makethegui:
+Gui, new, ,VAR																			
+gui, show, w274 h370 ,																	
+gui, color, 292928,																		; background
+gui, font, cBABABA																		; overall font style, cHEX color
+gui, add, text, x10 y10, % "page calibration:"
+gui, font, w600
+gui, add, text, x100 y10, % page
+gui, font, w400
+gui, add, text, x150 y10, % "ruler y val:"
+gui, font, w600
+gui, add, text, x230 y10, % rule
+gui, font, w400
+Gui, Add, GroupBox, x10 y+6 w120 h130, calpix												; adds box 
+gui, add, text, x20 y46, % "media:	 " calpix.mex " 	" calpix.mey		; first line of text at x,y
+gui, add, text, y+2, % "cut:	 " calpix.cutx									
+gui, add, text, y+2, % "edit:	 " calpix.edx 									
+gui, add, text, y+2, % "fusion:	" calpix.fux
+gui, add, text, y+2, % "color:	" calpix.cox
+gui, add, text, y+2, % "fairlight:	" calpix.fax
+gui, add, text, y+2, % "render:	" calpix.rex " 	" calpix.mey
+Gui, Add, GroupBox, x+20 y29 w120 h130, rulers
+gui, add, text, x152 y46, % "media:	 	  -" 		
+gui, add, text, y+2, % "cut:	 	  -" 							
+gui, add, text, y+2, % "edit:		" ruler.edy							
+gui, add, text, y+2, % "fusion:	     " ruler.fux "	"ruler.fuy
+gui, add, text, y+2, % "color:	     " ruler.cox "	"ruler.coy
+gui, add, text, y+2, % "fairlight:		" ruler.fay
+gui, add, text, y+2, % "render:		" ruler.rey
+gui, font, w600
+gui, add, text, x10 y170, % "keyframe:	" keyframe.x "	" keyframe.y
+gui, font, w400
+Gui, Add, GroupBox,  y+6 w120 h130, keyframe buttons
+gui, add, text, x20 y210, % "media:	    	- "
+gui, add, text, y+2, % "cut:	    	- "
+gui, add, text, y+2, % "edit:	     " kf.edx "	" kf.edy	
+gui, add, text, y+2, % "fusion:	     " kf.fux "	" kf.fuy
+gui, add, text, y+2, % "color:	     " kf.cox "	" kf.coy
+gui, add, text, y+2, % "fairlight:	     " kf.fax "	" kf.fay
+gui, add, text, y+2, % "render:	     " kf.rex "	" kf.rey
+gui, add, text, x152 y180, % "scrollmod: " scrollmod
+gui, add, text, y+2, % "heldf1: " heldf1
+gui, add, text, y+2, % "cursed: " cursed
+gui, add, text, y+2, % "heldf20: " heldf20
+gui, add, text, y+2, % "pagescroll: " pagescroll
+gui, add, text, y+2, % "wheelarrow: " wheelarrow
+gui, add, text, y+2, % "undoscroll: " undoscroll
+gui, add, text, y+2, % "highlight: " highlight
+gui, add, text, y+2, % "distance: " distance 											
+gui, add, text, y+2, % "vmax: " vmax 
+Gui, Add, Button, x100 y+20 Default w80 gKillVAR, OK
+gui +LastFound +OwnDialogs +AlwaysOnTop -caption
+
+return
+
+KillVAR:
+	Gui destroy
 Return
