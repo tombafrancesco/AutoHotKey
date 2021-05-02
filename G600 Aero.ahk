@@ -20,7 +20,7 @@ Return
 
 ;----------------------------------- plain text paste, file path
 
-!^v::
+!^v::																			; AltGr V
 	send % clipboard
 return
 
@@ -30,7 +30,7 @@ return
 	SetTitleMatchMode, 2														; launch brackets altgr script
 	DetectHiddenWindows, On
 	If !WinExist("brackets_altgr.ahk" . " ahk_class AutoHotkey")
-		Run, C:\Users\tomba\OneDrive\Desktop\AutoHotKey\brackets_altgr.ahk
+		Run, %A_ScriptDir%\brackets_altgr.ahk
 Return
 
 ;----------------------------------- capslock modifier
@@ -50,7 +50,6 @@ menu, testmenu, add, title, stateyourcase
 menu, testmenu, add, lower, stateyourcase
 menu, testmenu, show  
 return 
-
 
 
 ;------------------------------------- transparent
@@ -124,8 +123,8 @@ $AppsKey::
 			}
 		Else If (p = "00") { 										
 			page := pagecheck(calpix)										;pagecheck still relies on mousemove... but works 99%+
-			if WinActive("Secondary Screen")								;for tooltip reasons
-				gosub overkill												;if can ever be bothered could probbly create guis via DLL
+			if WinActive("Secondary Screen")								;for tooltip pos reasons
+				gosub overkill												
 			start := GetCursorPos()											
 			DllCall("SetCursorPos", "int", 10, "int", 54) 					;setcursorpos doesn't work properly from second screen
 			DllCall("SetCursorPos", "int", calpix.mex, "int", calpix.mey)
@@ -158,11 +157,8 @@ Return
 
 
 !AppsKey::
-
 	rule:= yvalruler(page, ruler.edy, ruler.coy, ruler.fuy, ruler.fay, ruler.rey)
-	
 	keyframe := keyframe(page, kf.edx, kf.edy, kf.cox, kf.coy, kf.fux, kf.fuy, kf.fax, kf.fay, kfrex, kf.rey)
-
 	goto makethegui
 Return
 
@@ -435,9 +431,9 @@ Return
 
 
 
-;--------------------------------------------------------	g9    mouse: new tab in chrome, new sheet in Notepad++ 
+;--------------------------------------------------------	g9    	mouse: new tab in chrome, new sheet in Notepad++ 
 
-;------------------------------------------------------------     double press for Razor blade tool
+;-------------------------------------------------------		    double press for Razor blade tool
 
 
 
@@ -449,11 +445,11 @@ $f1::
 		send {f1}
 		Keywait, f1, t0.3
 			if errorlevel {		
-				gosub movetoruler		
+				gosub movetoruler	
 				Send {lbutton down}
 				heldf1 := 1
 				scrollmod := 1
-				mousegetpos x,y
+				; mousegetpos x,y
 				tooltip ◀ ◈ ▶, x-24, y+12				; ◀ ◈ ▶      or  ◀ ◆ ▶ ?
 				}
 		keywait f1
@@ -468,18 +464,21 @@ f1 up::
 	if (heldf1=1) {
 		Send {Lbutton up}
 		if (page="edit") {
-			mousegetpos skippedx, skippedy
-			Mousemove, skippedx, skip.y
+			skipped := GetCursorPos()
+			DllCall("SetCursorPos", "int", skipped.x, "int", skip.y)
+			; mousegetpos skippedx, skippedy
+			; Mousemove, skippedx, skip.y
 			}
-		else 
+		else {
 			if (page="color") {
-			mousegetpos skippedx, skippedy
-			ruler.cox := skippedx
+				mousegetpos skippedx, skippedy
+				ruler.cox := skippedx
+				}
+			Mousemove, skip.x, skip.y
 			}
-		Mousemove, skip.x, skip.y
 		scrollmod := 0
 		heldf1:=0
-		tooltip
+		tooltip	
 		}
 return	
 
@@ -750,14 +749,15 @@ $f23::
 	if WinActive("ahk_exe Resolve.exe") {
 		send {f12}
 		Sendinput {f23}
-		keywait, f23, t.3
+		keywait, f23, t.3									; careful about non edit pages! FIX!!
 			if errorlevel {
 				Send {f12}
 				highlight:=1
-				tooltip bam
 				}
-			sleep 1000
-			send {esc}
+			if (page="edit"){
+				sleep 1000
+				send {esc}
+			}
 		 keywait f23
 		 }
 	else {
@@ -776,14 +776,14 @@ $f23::
 		}	
 Return
 
-	
 f23 up::
 	if (highlight=1) {
 		send {f23}
 	highlight:=0
-	tooltip  
-	sleep 1000
-	send {esc}
+	if (page="edit"){
+		sleep 1000
+		send {esc}
+		}
 	}
 Return
 
