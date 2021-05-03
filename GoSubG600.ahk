@@ -209,7 +209,7 @@ Qmove:
 Return
 
 
-numpad0::
+
 makethegui:
 Gui, new, ,VAR																			
 																	

@@ -1,7 +1,6 @@
-﻿#NoEnv  ; Recommended for performance and compatibility with future AutoHotkey releases.
-; #Warn  ; Enable warnings to assist with detecting common errors.
-SendMode Input  ; Recommended for new scripts due to its superior speed and reliability.
-SetWorkingDir %A_ScriptDir%  ; Ensures a consistent starting directory.
+﻿#NoEnv  
+SendMode Input  
+SetWorkingDir %A_ScriptDir%  
 
 
 ; o o o o o o o o o o o o o o o INITIAL VALUE VARIABLES o o o o o o o o o o o o o o o o 
@@ -41,10 +40,39 @@ vmax := 	1												; Runtime variables. Do not modify.
 Qmode:=0
 Qreset:
 start:=A_TickCount
+; color Qmode
 q:={x:480,y:1130}
 w:={x:540,y:1130}
 e:={x:1500,y:1130}
 r:={x:1095,y:988}
+co:={}
+co.q:=q
+co.w:=w
+co.e:=e
+co.r:=r
+
+; edit Qmode
+q:={x:1500,y:1130}
+w:={x:1600,y:1130}
+e:={x:1700,y:1130}
+r:={x:1895,y:988}
+ed:={}
+ed.q:=q
+ed.w:=w
+ed.e:=e
+ed.r:=r
+
+;fusion Qmode
+q:={x:480,y:500}
+w:={x:540,y:530}
+e:={x:1500,y:530}
+r:={x:1095,y:588}
+fu:={}
+fu.q:=q
+fu.w:=w
+fu.e:=e
+fu.r:=r
 return
 
-		
+
+

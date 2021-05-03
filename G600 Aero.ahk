@@ -95,7 +95,6 @@ Return
 $+\::
 	if Winactive("ahk_exe resolve.exe") {
 		Box_Destroy()
-		; Gui, 94: destroy
 		gosub Qreset
 		Qmode:=0
 		}
