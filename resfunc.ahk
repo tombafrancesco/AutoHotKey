@@ -102,4 +102,44 @@ Box_Init(C="yellow") {
 	gui, 99: add, text, x4 y0, R							;Use Gui +LastFoundExist and then WinExist()
 }
  
-; . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .  
+
+pageacc(d = "DaVinci Resolve by Blackmagic Design - 17.1.0")	{
+	winactivate % d
+	WinGet, hWnd, ID, A																
+	oAcc := Acc_Get("Object", "4.2.2.3", 0, "ahk_id " hWnd)																
+	if (oAcc.accState(0)=0)														
+		page:= "edit"	
+	else {
+		oAcc := Acc_Get("Object", "4.2.2.6", 0, "ahk_id " hWnd)
+		if (oAcc.accState(0)=0)	
+			page:= "color"
+		else {
+			oAcc := Acc_Get("Object", "4.2.2.5", 0, "ahk_id " hWnd)
+			if (oAcc.accState(0)=0)	
+				page:= "fairlight"
+			else {
+				oAcc := Acc_Get("Object", "4.2.2.4", 0, "ahk_id " hWnd)
+				if (oAcc.accState(0)=0)	
+					page:= "fusion"
+				else {
+					oAcc := Acc_Get("Object", "4.2.2.2", 0, "ahk_id " hWnd)
+					if (oAcc.accState(0)=0)	
+						page:= "cut"
+					else {
+						oAcc := Acc_Get("Object", "4.2.2.7", 0, "ahk_id " hWnd)
+						if (oAcc.accState(0)=0)	
+							page:= "render"
+						else {
+							oAcc := Acc_Get("Object", "4.2.2.1", 0, "ahk_id " hWnd)
+							if (oAcc.accState(0)=0)	
+								page:= "media"
+							}
+						}
+					}
+				}
+			}
+		}
+	return page
+}
+
+

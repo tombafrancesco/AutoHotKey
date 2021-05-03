@@ -147,6 +147,11 @@ $AppsKey::
 			run, C:\Program Files\AutoHotkey\WindowSpy.ahk		
 Return
 
++AppsKey::
+	page :=	pageacc()
+	coordmode tooltip screen
+	tooltip % page, calpix.fux-50, 1,2
+return
 
 #delete::
 	send {insert}
@@ -328,10 +333,10 @@ Return
 	
 !home::
 if WinActive("ahk_exe notepad++.exe") 
-	send ^1
+	send +{f7}
 return
 
-$end::
+$end::Y
 	keywait end, t.3
 	
 	if errorlevel {
@@ -349,7 +354,7 @@ Return
 
 !end::
 if WinActive("ahk_exe notepad++.exe") 
-	send ^2
+	send +{f8}
 return
 
 <!<^0::
@@ -580,7 +585,10 @@ f20 up::
 			WinActivate %davinci%
 			page := pagecheck(calpix)
 			if (page = "") 
-				gosub overkill 
+				gosub overkill
+			sleep 200
+			if WinActive("Secondary Screen")
+				gosub underkill	
 			}
 		}
 return	
@@ -647,6 +655,9 @@ $f21::
 		WinActivate %davinci%
 		coordmode tooltip screen
 		tooltip % page, calpix.fux-50, 1, 2
+		sleep 200
+		if WinActive("Secondary Screen")
+			gosub underkill	
 		}
 		
 Return
@@ -674,6 +685,9 @@ $!f21::
 		WinActivate %davinci%
 		coordmode tooltip screen
 		tooltip % page, calpix.fux-50, 1, 2
+		sleep 200
+		if WinActive("Secondary Screen")
+			gosub underkill	
 		}
 	else
 		Sendinput {esc}
@@ -743,44 +757,42 @@ Return
 	tooltip -- PIXPICKER --
 Return
 
-;-----------------------------------------------------		g13      reload
+;-----------------------------------------------------		g13      cut, refresh, save
 
-$f23::
+
+$f23:: 
 	if WinActive("ahk_exe Resolve.exe") {
-		send {f12}
-		Sendinput {f23}
-		keywait, f23, t.3									; careful about non edit pages! FIX!!
-			if errorlevel {
+		send {f23}
+		keywait, f23, t.3	
+		if errorlevel {
+			highlight:=1
+			if (page="edit")
 				Send {f12}
-				highlight:=1
-				}
-			if (page="edit"){
-				sleep 1000
-				send {esc}
 			}
-		 keywait f23
-		 }
+		keywait f23
+	}
 	else {
-		  if ((A_PriorHotkey = "f23 up" || A_PriorHotkey = "$f22") && A_TimeSincePriorHotkey < 500) {			
-			if WinActive("ahk_exe Notepad++.exe") 
-				Send ^+{f5}													;saved as RUN: $(FULL_CURRENT_PATH)
-			else															
-				Sendinput {esc}
-			}
-		else {
-			if WinActive("ahk_exe Notepad++.exe") 
-				send ^s
-			else
-				Sendinput ^{f5}	
-			}
-		}	
+	  if ((A_PriorHotkey = "f23 up" || A_PriorHotkey = "$f23" || A_PriorHotkey = "$f22") && A_TimeSincePriorHotkey < 500) {			
+		if WinActive("ahk_exe Notepad++.exe") 
+			Send ^+{f5}													;saved as RUN: $(FULL_CURRENT_PATH)
+		else															
+			Sendinput {esc}
+		}
+	else {
+		if WinActive("ahk_exe Notepad++.exe") 
+			send ^s
+		else
+			Sendinput ^{f5}	
+		}
+	}	
 Return
+
 
 f23 up::
 	if (highlight=1) {
 		send {f23}
 	highlight:=0
-	if (page="edit"){
+	if (page="edit") {
 		sleep 1000
 		send {esc}
 		}
@@ -791,10 +803,7 @@ Return
 
 $f24::
 	if WinActive("ahk_exe Resolve.exe") {
-		send {f12}
 		Sendinput {f24}
-		sleep 1000
-		send {esc}
 		}
 	else if WinActive("ahk_exe notepad++.exe")	
 		sendinput ^q
@@ -827,7 +836,7 @@ Return
 
 
 
-;------------------------------------------------------		g18  	 click:start; long click:show desktop
+;------------------------------------------------------		g18  	 click:start;   long click:show desktop
 
 rwin::
 	keywait, rwin, t.3
@@ -1363,8 +1372,30 @@ return
 ;                    00000                                                
   
 
-    
 
+; o o o o o o o o o o o o o o o o    D PAD   o o o o o o o o o o o o o o o o
+
+#if highlight
+
+up::
+	send !{up}
+return
+
+down::
+	send !{down}
+return
+
+
+
+
+
+
+
+
+
+#if
+
+; o o o o o o o o o o o o o o o o    KEYS   o o o o o o o o o o o o o o o o
 
 ;-----------------------------------G01  -  Buggy with modifiers for some reason...
 	

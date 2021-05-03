@@ -19,9 +19,7 @@ SetWorkingDir %A_ScriptDir%
 
 underkill:													;be careful with this - can bug up overkill for some reason
 	if WinActive("ahk_exe resolve.exe") {
-	SetTitleMatchMode 2
-	WinActivate %davinci%
-	page:=pagecheck(calpix)
+	page :=	pageacc()
 	coordmode tooltip screen
 	tooltip % page, calpix.fux-50, 1, 2
 	}
@@ -211,30 +209,30 @@ Qmove:
 Return
 
 
-
+numpad0::
 makethegui:
 Gui, new, ,VAR																			
-gui, show, w274 h370 ,																	
+																	
 gui, color, 292928,																		; background
 gui, font, cBABABA																		; overall font style, cHEX color
-gui, add, text, x10 y10, % "page calibration:"
+gui, add, text, x20 y16, % "page calibration:"
 gui, font, w600
-gui, add, text, x100 y10, % page
+gui, add, text, x100 y16, % page
 gui, font, w400
-gui, add, text, x150 y10, % "ruler y val:"
+gui, add, text, x152 y16, % "ruler y val:"
 gui, font, w600
-gui, add, text, x230 y10, % rule
+gui, add, text, x230 y16, % rule
 gui, font, w400
-Gui, Add, GroupBox, x10 y+6 w120 h130, calpix												; adds box 
-gui, add, text, x20 y46, % "media:	 " calpix.mex " 	" calpix.mey		; first line of text at x,y
+Gui, Add, GroupBox, x20 y36 w120 h130, calpix												; adds box 
+gui, add, text, x28 y52, % "media:	 " calpix.mex " 	" calpix.mey		; first line of text at x,y
 gui, add, text, y+2, % "cut:	 " calpix.cutx									
 gui, add, text, y+2, % "edit:	 " calpix.edx 									
 gui, add, text, y+2, % "fusion:	" calpix.fux
 gui, add, text, y+2, % "color:	" calpix.cox
 gui, add, text, y+2, % "fairlight:	" calpix.fax
 gui, add, text, y+2, % "render:	" calpix.rex " 	" calpix.mey
-Gui, Add, GroupBox, x+20 y29 w120 h130, rulers
-gui, add, text, x152 y46, % "media:	 	  -" 		
+Gui, Add, GroupBox, x150 y36 w120 h130, rulers
+gui, add, text, x160 y52, % "media:	 	  -" 		
 gui, add, text, y+2, % "cut:	 	  -" 							
 gui, add, text, y+2, % "edit:		" ruler.edy							
 gui, add, text, y+2, % "fusion:	     " ruler.fux "	"ruler.fuy
@@ -242,17 +240,17 @@ gui, add, text, y+2, % "color:	     " ruler.cox "	"ruler.coy
 gui, add, text, y+2, % "fairlight:		" ruler.fay
 gui, add, text, y+2, % "render:		" ruler.rey
 gui, font, w600
-gui, add, text, x10 y170, % "keyframe:	" keyframe.x "	" keyframe.y
+gui, add, text, x20 y180, % "keyframe:	" keyframe.x "	" keyframe.y
 gui, font, w400
 Gui, Add, GroupBox,  y+6 w120 h130, keyframe buttons
-gui, add, text, x20 y210, % "media:	    	- "
+gui, add, text, x28 y218, % "media:	    	- "
 gui, add, text, y+2, % "cut:	    	- "
 gui, add, text, y+2, % "edit:	     " kf.edx "	" kf.edy	
 gui, add, text, y+2, % "fusion:	     " kf.fux "	" kf.fuy
 gui, add, text, y+2, % "color:	     " kf.cox "	" kf.coy
 gui, add, text, y+2, % "fairlight:	     " kf.fax "	" kf.fay
 gui, add, text, y+2, % "render:	     " kf.rex "	" kf.rey
-gui, add, text, x152 y180, % "scrollmod: " scrollmod
+gui, add, text, x290 y20, % "scrollmod: " scrollmod
 gui, add, text, y+2, % "heldf1: " heldf1
 gui, add, text, y+2, % "cursed: " cursed
 gui, add, text, y+2, % "heldf20: " heldf20
@@ -262,8 +260,10 @@ gui, add, text, y+2, % "undoscroll: " undoscroll
 gui, add, text, y+2, % "highlight: " highlight
 gui, add, text, y+2, % "distance: " distance 											
 gui, add, text, y+2, % "vmax: " vmax 
-Gui, Add, Button, x100 y+20 Default w80 gKillVAR, OK
+Gui, Add, Button, x200 y300 Default w80 gKillVAR, OK
+gui margin, 20, 20
 gui +LastFound +OwnDialogs +AlwaysOnTop -caption
+gui, show
 
 return
 
