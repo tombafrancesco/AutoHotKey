@@ -15,7 +15,7 @@ SetWorkingDir %A_ScriptDir%
 
 ;----------------------------------- lock window on top
 
-^space:: Winset, Alwaysontop, , A 
+^!Numpad0:: Winset, Alwaysontop, , A 
 Return
 
 ;----------------------------------- plain text paste, file path
@@ -52,21 +52,14 @@ menu, testmenu, show
 return 
 
 
-;------------------------------------- transparent
-
-!^Appskey::
-	winget, trans, transparent, a
-	if (trans="")
-		Winset, Transparent, 128, A
-	else
-		Winset, Transparent, OFF, A
-Return
-
 
 ;-------------------------------------Qmode
 
 $\::
 	if Winactive("ahk_exe resolve.exe") {
+	page := pageacc()
+	coordmode tooltip screen
+	tooltip % page, calpix.fux-50, 1,2
 	Keywait, \, t0.3
 	if errorlevel {
 		gosub Qboxes
@@ -102,6 +95,13 @@ $+\::
 		send +\
 Return
 
+
+
+;----------------------------------- fix Insert!
+
+#delete::
+	send {insert}
+Return
 
 ;-----------------------------------windowspy hold Menu key
 
@@ -146,15 +146,56 @@ $AppsKey::
 			run, C:\Program Files\AutoHotkey\WindowSpy.ahk		
 Return
 
+;------------------------------------- + appskey: fix weird window on opening
 +AppsKey::
 	page :=	pageacc()
+	WinGet, hWnd, ID, A
+	oAcc := Acc_Get("Object", "4.1.13", 0, "ahk_id " hWnd)
+	oAcc.accDoDefaultAction(0)
+	oAcc := Acc_Get("Object", "4.1.13.1.17", 0, "ahk_id " hWnd)
+	oAcc.accDoDefaultAction(0)
+	oAcc := ""
 	coordmode tooltip screen
 	tooltip % page, calpix.fux-50, 1,2
 return
 
-#delete::
-	send {insert}
+;------------------------------------- appskey number select prim monitor
+
+AppsKey & Numpad1::
+	page :=	pageacc()
+	WinGet, hWnd, ID, A
+	oAcc := Acc_Get("Object", "4.1.13", 0, "ahk_id " hWnd)
+	oAcc.accDoDefaultAction(0)
+	oAcc := Acc_Get("Object", "4.1.13.1.9", 0, "ahk_id " hWnd)
+	oAcc.accDoDefaultAction(0)	
+	oAcc := Acc_Get("Object", "4.1.13.1.9.1.1", 0, "ahk_id " hWnd)
+	oAcc.accDoDefaultAction(0)	
+	oAcc := ""
+return
+
+AppsKey & Numpad2::
+	page :=	pageacc()
+	WinGet, hWnd, ID, A
+	oAcc := Acc_Get("Object", "4.1.13", 0, "ahk_id " hWnd)
+	oAcc.accDoDefaultAction(0)
+	oAcc := Acc_Get("Object", "4.1.13.1.9", 0, "ahk_id " hWnd)
+	oAcc.accDoDefaultAction(0)	
+	oAcc := Acc_Get("Object", "4.1.13.1.9.1.2", 0, "ahk_id " hWnd)
+	oAcc.accDoDefaultAction(0)	
+	oAcc := ""
+return
+
+
+;------------------------------------- transparent    -  probably change key
+
+!^Appskey::
+	winget, trans, transparent, a
+	if (trans="")
+		Winset, Transparent, 128, A
+	else
+		Winset, Transparent, OFF, A
 Return
+
 
 
 ; o o o o o o o o o o o o o o o o o o o VAR GUI o o o o o o o o o o o o o o o o o o o o
@@ -185,7 +226,7 @@ Return
 ; o o o o o o o o o o o o o o o o o o o FASTSCROLL o o o o o o o o o o o o o o o o o o o o
 
 
-#if !WinActive("ahk_exe Resolve.exe")
+#if (!WinActive("ahk_exe Resolve.exe") && !WinActive("ahk_exe googleearth.exe"))
 
 Process, Priority, , H
 
@@ -204,34 +245,26 @@ WheelDown::
 return
 
 
-
-+^0::
-	keywait, 0, t.3												; 
-	if errorlevel {		
-		start:=A_TickCount
-		diff=5000										; reset all (except qmod?)
-		scrollmod=:0
-		heldf1:=0
-		heldf20:=0
-		pagescroll:=0
-		wheelarrow:=0
-		undoscroll:=0
-		cursed:=0
-		distance:=0										; Runtime variable
-		vmax:= 1										; Runtime variable
-		t:=0
-		v:=0
-		xfastscroll:=0
-		tooltip RESET
-		}
-	else{
-		xfastscroll:=(xfastscroll-1)**2					; pause unpause
-		if (xfastscroll=1)
-			tooltip ■												
-		else 
-			tooltip ▶									;play ►
-			}
-	sleep 500
++^0::												; reset vars and toggle fast scroll 	
+	start:=A_TickCount
+	diff=5000										; reset all (except qmod?)
+	scrollmod=:0
+	heldf1:=0
+	heldf20:=0
+	pagescroll:=0
+	wheelarrow:=0
+	undoscroll:=0
+	cursed:=0
+	distance:=0										; Runtime variable
+	vmax:= 1										; Runtime variable
+	t:=0
+	v:=0
+	xfastscroll:=(xfastscroll-1)**2					; pause unpause
+	if (xfastscroll=1)
+		tooltip ■												
+	else 
+		tooltip ▶									;play ►
+	sleep 1000
 	tooltip
 return
 
@@ -267,7 +300,7 @@ Return
 $+wheelup::
 	if WinActive("ahk_exe resolve.exe") 
 		send +{wheelup}
-	else if WinActive("ahk_exe chrome.exe") 
+	else if (WinActive("ahk_exe chrome.exe") || WinActive("ahk_exe rawtherapee.exe")) 
 		send +{wheelup}
 	else
 		send {wheelleft}
@@ -277,7 +310,7 @@ Return
 $+wheeldown::
 	if WinActive("ahk_exe resolve.exe")
 		send +{wheeldown}
-	else if WinActive("ahk_exe chrome.exe") 
+	else if (WinActive("ahk_exe chrome.exe") || WinActive("ahk_exe rawtherapee.exe"))
 		send +{wheeldown}
 	else
 		send {wheelright}
@@ -302,7 +335,6 @@ Return
 #if !WinActive("ahk_exe Resolve.exe")							;needs this to play ball with resolve
 
 ^!WheelUp::
-
 	if winactive("ahk_exe notepad++.exe") 
 		Send ^{f2}
 	else
@@ -316,6 +348,23 @@ Return
 		Send {right}
 Return
 
+#if WinActive("ahk_exe Resolve.exe") && (page="fusion")
+
+^!WheelUp:: 
+	send !+{Wheelup}
+Return
+
+^!WheelDown:: 
+	send !+{WheelDown}
+Return
+
+!WheelUp:: 
+	send {WheelRight}
+Return
+
+!WheelDown:: 
+	send {WheelLeft}
+Return
 #if
 
 
@@ -335,7 +384,7 @@ if WinActive("ahk_exe notepad++.exe")
 	send +{f7}
 return
 
-$end::Y
+$end::
 	keywait end, t.3
 	
 	if errorlevel {
@@ -357,7 +406,10 @@ if WinActive("ahk_exe notepad++.exe")
 return
 
 <!<^0::
-	sendinput {Media_Play_Pause}
+	if WinActive("ahk_exe rawtherapee.exe") 
+		send z
+	else
+		send !^0
 return
 
 
@@ -520,8 +572,7 @@ $^!f1::
 Return
 
 $!f1::
-	if WinActive("ahk_exe Resolve.exe") 
-		{
+	if WinActive("ahk_exe Resolve.exe") {
 		pixpicker := true
 		cal:=2
 		start := GetCursorPos()
@@ -596,7 +647,7 @@ return
 
 $!f20::
 	if WinActive("ahk_exe resolve.exe") {
-		if (page:="color"){
+		if (page = "color"){
 			keywait f20, t.05
 				skip := GetCursorPos()												;seems to work better than MouseGetPos
 				if WinActive("Secondary Screen") 
@@ -632,6 +683,12 @@ $f21::
 					coordmode tooltip screen
 					tooltip % page, calpix.fux-50, 1, 2
 					Gui, 94: Show
+					sleep 200
+					if (page="") {
+						gosub underkill
+						if (page="")
+							gosub overkill
+						}
 					}
 				}
 			else 	
@@ -798,6 +855,19 @@ f23 up::
 	}
 Return
 
+$!f23::
+	if WinActive("ahk_exe resolve.exe") {
+		if (page="color")
+			send !c
+		else 
+			send !{f23}
+		}
+	else
+		send !{f23}
+return
+	
+
+
 ;----------------------------------------------------		g14    forward
 
 $f24::
@@ -884,7 +954,7 @@ return
 
 #if
 
-;----------------------------------------------------		g19 		see open windows
+;----------------------------------------------------		g19 		UNDO    REDO    COPY    PASTE
 
 
 >^c::
@@ -1024,7 +1094,7 @@ Return
 ;  ooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo
 
 
-; o o o o o o o o o o o o o o o TWEAK SCROLLMOD o o o o o o o o o o o o o o o
+; o o o o o o o o o o o o o o o      SCROLLMOD      o o o o o o o o o o o o o o o
 
 #if (scrollmod!=0)
  
@@ -1106,6 +1176,15 @@ Return
 	; mousemove, -5,-5,,R
 	; sleep 10
 ; return
+
+$Rbutton::															; TEST!! does this work???
+	if (page="fusion")
+		Send !{LButton up}
+	else 
+		send {RButton}
+	Scrollmod :=0
+	tooltip 
+Return
 
 #if
 
@@ -1845,7 +1924,13 @@ f15 & Pgdn::
 Send !{pgdn}
 Return
 
+^f15::
+	Send ^{f15}
+return
 
++f15::
+	Send +{f15}
+return
 
 ;-----------------------------------G16  undo button; 
 
@@ -2295,3 +2380,105 @@ return
 #if
 
 
+#if (page="fusion")
+
+pgup::
+	send {left 5}
+return
+
+pgdn::
+	send {right 5}
+return
+
+
+
+^pgup::
+	send {left}
+return
+
+^pgdn::
+	send {right}
+return
+
+#if
+
+
+; ------								----	 CONTROLS    RawTherapee	----
+
+#if !WinActive("ahk_exe resolve.exe")
+
+f16::
+	send ^z
+return
+
+#if
+
+#if WinActive("ahk_exe rawtherapee.exe")
+
+!WheelDown::
+	Send +{WheelDown 3}
+Return
+
+!WheelUp::
+	Send +{WheelUp 3}
+Return
+
+^0::
+	send f
+Return
+
+f6::
+	KeyWait, F6
+	send <
+return
+
+f10::
+	KeyWait, F10
+	send >
+return
+
+^pgup::
+!pgup::
+	send {pgup 5}
+Return
+
+^pgdn::
+!pgdn::
+	send {pgdn 5}
+Return
+
+!f16::
+	send ^+z
+return
+
+home::
+	send {f3}
+return
+
+end::
+	send {f4}
+return
+
+f21:: 
+	send ^{f4}
+return
+
+!f21:: 
+	send ^{f2}
+return
+
+#if
+
+#if WinActive("ahk_exe xnviewmp.exe")
+
+f10::
+	KeyWait, F10
+	send ^5
+return
+
+f15::
+	KeyWait, F15
+	send ^1
+return
+
+#if

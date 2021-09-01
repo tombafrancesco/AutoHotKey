@@ -38,41 +38,54 @@ vmax := 	1												; Runtime variables. Do not modify.
 
 				;QMODE
 Qmode:=0
+
 Qreset:
 start:=A_TickCount
+
+; edit Qmode
+q:={x:2000,y:400}
+w:={x:2000,y:530}
+e:={x:2000,y:800}
+r:={x:2000,y:988}
+edit:={}
+edit.q:=q
+edit.w:=w
+edit.e:=e
+edit.r:=r
+ 
 ; color Qmode
 q:={x:480,y:1130}
 w:={x:540,y:1130}
 e:={x:1500,y:1130}
 r:={x:1095,y:988}
-co:={}
-co.q:=q
-co.w:=w
-co.e:=e
-co.r:=r
-
-; edit Qmode
-q:={x:1500,y:1130}
-w:={x:1600,y:1130}
-e:={x:1700,y:1130}
-r:={x:1895,y:988}
-ed:={}
-ed.q:=q
-ed.w:=w
-ed.e:=e
-ed.r:=r
+color:={}
+color.q:=q
+color.w:=w
+color.e:=e
+color.r:=r
 
 ;fusion Qmode
-q:={x:480,y:500}
+q:={x:80,y:500}
 w:={x:540,y:530}
 e:={x:1500,y:530}
-r:={x:1095,y:588}
-fu:={}
-fu.q:=q
-fu.w:=w
-fu.e:=e
-fu.r:=r
+r:={x:1095,y:530}
+fusion:={}
+fusion.q:=q
+fusion.w:=w
+fusion.e:=e
+fusion.r:=r
 return
 
 
-
+; Numpad0::								 ; how to use matrices (array of arrays)
+; page := "edit"
+; key := "w"
+; coor := "y"
+; msgbox % edit["q"]["x"] 	
+; msgbox % edit[key]["x"]		
+; msgbox % edit["q"][coor]	
+; msgbox % edit[coor][key] 
+; msgbox % %page%["q"]["x"] 	 
+; msgbox % %page%[key]["x"] 	
+; msgbox % %page%[key][coor] 
+; return

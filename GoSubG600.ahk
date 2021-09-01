@@ -18,16 +18,16 @@ SetWorkingDir %A_ScriptDir%
 
 
 underkill:													;be careful with this - can bug up overkill for some reason
-	if WinActive("ahk_exe resolve.exe") {
+	; if WinActive("ahk_exe resolve.exe") {
 	page :=	pageacc()
 	coordmode tooltip screen
 	tooltip % page, calpix.fux-50, 1, 2
-	}
+	; }
 return
 
 
 overkill:													;sometimes pagecheck fails. this should fix problem 99%. 
-	if WinActive("ahk_exe resolve.exe") {
+	; if WinActive("ahk_exe resolve.exe") {
 	DllCall("SetCursorPos", "int", 1860, "int", 14) 
 	mouseclick
 	page := pagecheck(calpix)
@@ -53,7 +53,7 @@ overkill:													;sometimes pagecheck fails. this should fix problem 99%.
 	tooltip % page, calpix.fux-50, 1,2
 	if (page = "")
 		msgbox problem
-	}
+	; }
 return
 
 
@@ -148,10 +148,10 @@ Return
 
 Qboxes:	
 	Box_Init()
-	Gui, 96: Show, % "x" q.x-10 " y" q.y-10 " w" 20 " h" 20 " NA", Horizontal 1
-	Gui, 97: Show, % "x" w.x-10 " y" w.y-10 " w" 20 " h" 20 " NA", Vertical 2
-	Gui, 98: Show, % "x" e.x-10 " y" e.y-10 " w" 20 " h" 20 " NA", Horizontal 2
-	Gui, 99: Show, % "x" r.x-10 " y" r.y-10 " w" 20 " h" 20 " NA", Vertical 2
+	Gui, 96: Show, % "x" %page%["q"]["x"]-10 " y" %page%["q"]["y"]-10 " w" 20 " h" 20 " NA", Horizontal 1
+	Gui, 97: Show, % "x" %page%["w"]["x"]-10 " y" %page%["w"]["y"]-10 " w" 20 " h" 20 " NA", Vertical 2
+	Gui, 98: Show, % "x" %page%["e"]["x"]-10 " y" %page%["e"]["y"]-10 " w" 20 " h" 20 " NA", Horizontal 2
+	Gui, 99: Show, % "x" %page%["r"]["x"]-10 " y" %page%["r"]["y"]-10 " w" 20 " h" 20 " NA", Vertical 2
 	sleep 1000
 Return		
 		
@@ -159,13 +159,15 @@ Return
 Qpix:
 	key:=A_ThisHotKey
 	dif:=(A_tickcount-start)
+	; msgbox % page
+	; msgbox % %page%[key]["x"] " " %page%[key]["y"]
 	if (dif > 300){
 		start:=A_TickCount
 		skip := GetCursorPos()
-		DllCall("SetCursorPos", "int", %key%.x, "int",%key%.y)
+		DllCall("SetCursorPos", "int", %page%[key]["x"] , "int", %page%[key]["y"] )
 		scrollmod:=1
 		Send {LButton down}
-		Box_Centre(%key%.x, %key%.y, 30, 20, 2, 0)
+		Box_Centre( %page%[key]["x"]  ,  %page%[key]["y"] , 30, 20, 2, 0)
 		Keywait %key%
 			{
 			scrollmod:=0
@@ -176,7 +178,7 @@ Qpix:
 			}
 		}	
 	else {
-		DllCall("SetCursorPos", "int", %key%.x, "int",%key%.y)
+		DllCall("SetCursorPos", "int",  %page%[key]["x"] , "int", %page%[key]["y"] )
 		Send {LButton 2}
 		DllCall("SetCursorPos", "int", skip.x, "int", skip.y)
 		Keywait %key% 
@@ -188,16 +190,16 @@ Qmove:
 	dif:=(A_tickcount-start)
 	if (dif > 2000)
 		skip := GetCursorPos()
-	DllCall("SetCursorPos", "int", %key%.x, "int",%key%.y)
+	DllCall("SetCursorPos", "int",  %page%[key]["x"] , "int", %page%[key]["y"] )
 	SetBatchLines, -1
 	SetWinDelay, -1
 	Loop {
 		newpos := GetCursorPos()
-		%key%.x := newpos.x, %key%.y := newpos.y
-		Box_Centre(%key%.x, %key%.y, 20, 20, 2, 1)
+		 %page%[key]["x"]  := newpos.x,  %page%[key]["y"]  := newpos.y
+		Box_Centre( %page%[key]["x"] ,  %page%[key]["y"] , 20, 20, 2, 1)
 		altstate := getkeystate("alt", p)
 		if (altstate=0) {
-			Box_Centre(%key%.x, %key%.y, 20, 20, 2, 1)
+			Box_Centre( %page%[key]["x"],  %page%[key]["y"] , 20, 20, 2, 1)
 			DllCall("SetCursorPos", "int", skip.x, "int",skip.y)
 			sleep 300
 			Box_Hide()
