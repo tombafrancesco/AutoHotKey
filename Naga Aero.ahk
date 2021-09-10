@@ -233,13 +233,17 @@ Process, Priority, , H
 WheelUp::  
 	if (cursed=0 && scrollmod=0 && heldf1=0 && heldf20=0 && pagescroll=0 && wheelarrow=0 && undoscroll=0 && cursed=0)
 		Goto Scroll
-	else 
+	else if (wheelarrow=true)
+		send {left}
+	else
 		Send {wheelup}
 return
   
 WheelDown::  
 	if (cursed=0 && scrollmod=0 && heldf1=0 && heldf20=0 && pagescroll=0 && wheelarrow=0 && undoscroll=0 && cursed=0)
 		Goto Scroll
+	else if (wheelarrow=true)
+		send {right}
 	else 
 		Send {wheeldown}
 return
@@ -279,6 +283,8 @@ $!WheelUp::
 		Sendinput {left}
 	else if WinActive("ahk_exe spotify.exe")
 		send +{left}	
+	else if winactive("ahk_exe notepad++.exe") 
+		Send ^{f2}
 	else
 		Sendinput !{WheelUp}
 Return
@@ -289,6 +295,8 @@ $!WheelDown::
 		Sendinput {right}
 	else if WinActive("ahk_exe spotify.exe")
 		send +{right}
+	else if winactive("ahk_exe notepad++.exe") 
+		Send ^{f3}
 	else
 		Sendinput !{WheelDown}
 Return
@@ -317,15 +325,7 @@ $+wheeldown::
 Return
 
 
-;----------------------------------------------------		^ Wheel - still unused in most pages in resolve!
- 	
-; $^wheelup::
-	; if WinActive("ahk_exe resolve.exe" && page=edit)
-; Return
 
-; $^wheeldown::
-	; if WinActive("ahk_exe resolve.exe" && page=edit)
-; Return
 
 ;-----------------------------------------------------		^! Wheel   ( Alt Gr )
 
@@ -697,26 +697,142 @@ $f21::
 			}
 		}
 	else if WinActive("ahk_exe Resolve.exe") {
-		keywait, f21, t.2
-		send +q 
-		sleep 10
-		send +3
-		if errorlevel {
-			heldf21:=1
+		keywait, f21, t.25
+			if errorlevel {
+			
+				pagechoose := true
+				
+				menu, testmenu, add, Color, pagechooser
+				menu, testmenu, add, Fusion, pagechooser
+				menu, testmenu, add, Fairlight, pagechooser
+				menu, testmenu, add, Cut, pagechooser
+				menu, testmenu, add, Media, pagechooser
+				menu, testmenu, add, Render, pagechooser
+				menu, testmenu, show 
+			
 			}
-		keywait f21
-		page := "edit"
-		SetTitleMatchMode 2
-		sleep 100
-		WinActivate %davinci%
-		coordmode tooltip screen
-		tooltip % page, calpix.fux-50, 1, 2
-		sleep 200
-		if WinActive("Secondary Screen")
-			gosub underkill	
-		}
-		
+			else {
+				send +q 
+				sleep 10
+				send +3
+				page := "edit"
+				SetTitleMatchMode 2
+				sleep 100
+				WinActivate %davinci%
+				coordmode tooltip screen
+				tooltip % page, calpix.fux-50, 1, 2
+				sleep 200
+				if WinActive("Secondary Screen")
+				gosub underkill	
+			}		
+		}	
 Return
+
+#if pagechoose
+
+; a::
+	; send {up}
+; return
+
+; s::
+	; send {down}
+
+; f21 up::
+	; send {enter}
+	; pagechoose := false
+; return
+
+#if
+
+; +Capslock::
+	; clipboard =
+	; send ^c
+	; clipwait 1
+	; text := clipboard
+	; if text =
+		; return
+
+; menu, testmenu, add, upper, stateyourcase
+; menu, testmenu, add, title, stateyourcase
+; menu, testmenu, add, lower, stateyourcase
+; menu, testmenu, show  
+; return 
+
+Pagechooser:													;  *Capslock mod
+	If (A_ThisMenuItem = "Color") { 
+		Send +4
+				page := "color"
+				SetTitleMatchMode 2
+				sleep 100
+				WinActivate %davinci%
+				coordmode tooltip screen
+				tooltip % page, calpix.fux-50, 1, 2
+				sleep 200
+				if WinActive("Secondary Screen")
+				gosub underkill	
+		}
+	Else If (A_ThisMenuItem = "Fusion") { ;       
+		Send +5
+				page := "fusion"
+				SetTitleMatchMode 2
+				sleep 100
+				WinActivate %davinci%
+				coordmode tooltip screen
+				tooltip % page, calpix.fux-50, 1, 2
+				sleep 200
+				if WinActive("Secondary Screen")
+				gosub underkill	
+		}
+	Else If (A_ThisMenuItem = "Fairlight") { ;       
+		Send +6
+				page := "fairlight"
+				SetTitleMatchMode 2
+				sleep 100
+				WinActivate %davinci%
+				coordmode tooltip screen
+				tooltip % page, calpix.fux-50, 1, 2
+				sleep 200
+				if WinActive("Secondary Screen")
+				gosub underkill	
+		}
+	Else If (A_ThisMenuItem = "Cut") { ;       
+		Send +2
+				page := "cut"
+				SetTitleMatchMode 2
+				sleep 100
+				WinActivate %davinci%
+				coordmode tooltip screen
+				tooltip % page, calpix.fux-50, 1, 2
+				sleep 200
+				if WinActive("Secondary Screen")
+				gosub underkill	
+		}	
+	Else If (A_ThisMenuItem = "Media") { ;       
+		Send +1
+				page := "media"
+				SetTitleMatchMode 2
+				sleep 100
+				WinActivate %davinci%
+				coordmode tooltip screen
+				tooltip % page, calpix.fux-50, 1, 2
+				sleep 200
+				if WinActive("Secondary Screen")
+				gosub underkill	
+		}
+	Else If (A_ThisMenuItem = "Render") { ;       
+		Send +7
+				page := "render"
+				SetTitleMatchMode 2
+				sleep 100
+				WinActivate %davinci%
+				coordmode tooltip screen
+				tooltip % page, calpix.fux-50, 1, 2
+				sleep 200
+				if WinActive("Secondary Screen")
+				gosub underkill	
+		}		
+Return 
+
 
 #if WinActive("ahk_exe Resolve.exe")
 
@@ -907,50 +1023,32 @@ Return
 
 ;------------------------------------------------------		g18  	 click:start;   long click:show desktop
 
-rwin::
-	keywait, rwin, t.3
-		if errorlevel
-			send #{d}
+XButton1::
+	keywait, XButton1, t.3
+		if errorlevel {
+			Send #{alt down}{tab}
+			wheelarrow:=true
+			tooltip WIN	
+			}
 		else
 			Send {rwin}
-	keywait rwin
+	keywait XButton1
+	send {alt up}
 return
 
 
-;------------------------------------------------------		!g18	 !click:scroll through windows;  long !click: see available windows    
+;------------------------------------------------------		!g18yu	 !click:scroll through windows;  long !click: see available windows    
 
-$!rwin::
-	Send !#{tab}
-	wheelarrow:=true
-	tooltip WIN		
-	keywait, rwin, t.3		
-	if errorlevel
-		send #{tab}
-	keywait rwin
-Return
-
-^rwin::
+^XButton1::
 	send !{f4}
 return
 
 #if wheelarrow
 
-!wheelup::
-	send {alt down}{left}
-return
-	
-	
-!wheeldown::
-	send {alt down}{right}
-return
-
 ~lbutton::											;scaramanzia	
-alt up::
 	wheelarrow:=false
 	tooltip
 return
-
-
 
 #if
 
@@ -966,23 +1064,14 @@ return
 		tooltip ☻
 		}
 	else if (A_priorhotkey= ">^c" && A_timesincepriorhotkey < 400)
-		send ^x
+		send ^v
 	else
 		send ^c
 	keywait c
 return
 
-
->^!c::
-	if WinActive("ahk_exe resolve.exe")
-		send ^v
-	else {
-		keywait, alt, t.5
-		if errorlevel
-			send #v
-		else 
-			send ^v
-	}
+>^+c::
+	send ^x
 return
 
 
@@ -2508,3 +2597,4 @@ f15::
 return
 
 #if
+
