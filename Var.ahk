@@ -27,6 +27,8 @@ wheelarrow :=	0											;!g18 scroll windows
 undoscroll :=	0											;g19 undo-redo scroll
 highlight :=	0											;g13 color page
 xfastscroll :=	0											;pause fastscroll
+
+copytimer := 0
 		
    
 				;FASTSCROLL:

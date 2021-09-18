@@ -493,13 +493,19 @@ Return
 
 
 
-$f1::
+$XButton2::
 	if WinActive("ahk_exe chrome.exe") {
-		Sendinput ^t
+		p := Morse()
+		If (p = "0"){
+			Sendinput ^t
+			}
+		If (p = "00"){
+			Sendinput ^w
+			}
 		}
 	else if WinActive("ahk_exe resolve.exe") {
 		send {f1}
-		Keywait, f1, t0.3
+		Keywait, XButton2, t0.3
 			if errorlevel {		
 				gosub movetoruler	
 				Send {lbutton down}
@@ -508,15 +514,15 @@ $f1::
 				; mousegetpos x,y
 				tooltip ◀ ◈ ▶, x-24, y+12				; ◀ ◈ ▶      or  ◀ ◆ ▶ ?
 				}
-		keywait f1
+		keywait XButton2
 		}
 	else {
-		keywait f1		;don't open a million tabs
+		keywait XButton2		;don't open a million tabs
 		Sendinput ^n
 		}
 Return
 
-f1 up::
+XButton2 up::
 	if (heldf1=1) {
 		Send {Lbutton up}
 		if (page="edit") {
@@ -541,14 +547,14 @@ return
 
 #if !WinActive("ahk_exe resolve.exe")
 
-f1 & WheelUp::
+XButton2 & WheelUp::
 	if WinActive("ahk_exe explorer.exe")
 		Send ^+{tab}
 	else	
 		Send ^{PgUp}
 Return
 
-f1 & WheelDown::
+XButton2 & WheelDown::
 	if WinActive("ahk_exe explorer.exe")
 		Send ^+{tab}
 	else
@@ -561,27 +567,27 @@ Return
 
 ;-------------------------------------------------------	!g9    mouse: cycle back tab 
 
-$^!f1::
-	if WinActive("ahk_exe Resolve.exe") {
-		pixpicker := true
-		i:=2
-		start := GetCursorPos()
-		gosub movetoruler
-		tooltip -- PIXPICKER --
-	}
-Return
+; $^!f1::
+	; if WinActive("ahk_exe Resolve.exe") {
+		; pixpicker := true
+		; i:=2
+		; start := GetCursorPos()
+		; gosub movetoruler
+		; tooltip -- PIXPICKER --
+	; }
+; Return
 
-$!f1::
-	if WinActive("ahk_exe Resolve.exe") {
-		pixpicker := true
-		cal:=2
-		start := GetCursorPos()
-		gosub movetoruler
-		tooltip -- PIXPICKER --
-		}
-	else
-		Sendinput ^w
-Return
+; $!f1::
+	; if WinActive("ahk_exe Resolve.exe") {
+		; pixpicker := true
+		; cal:=2
+		; start := GetCursorPos()
+		; gosub movetoruler
+		; tooltip -- PIXPICKER --
+		; }
+	; else
+		; Sendinput ^w
+; Return
 
 
 ;-------------------------------------------------------	g10     mouse: selects title bar in chrome, up one folder windows exp
@@ -1030,6 +1036,8 @@ XButton1::
 			wheelarrow:=true
 			tooltip WIN	
 			}
+		else if (a_thishotkey=a_priorhotkey && a_timesincepriorhotkey<300)
+			send #d
 		else
 			Send {rwin}
 	keywait XButton1
@@ -1063,12 +1071,23 @@ return
 		gosub cursing
 		tooltip ☻
 		}
-	else if (A_priorhotkey= ">^c" && A_timesincepriorhotkey < 400)
-		send ^v
-	else
-		send ^c
-	keywait c
+	else {
+		if (pastetime=1) {
+			send ^v
+			SetTimer, copytimer, off
+			pastetime:=0
+			}
+		else {
+			pastetime:=1
+			SetTimer, copytimer, -250
+		}
+	}
 return
+
+copytimer:
+	pastetime:=0
+	send ^c
+Return
 
 >^+c::
 	send ^x
