@@ -5,11 +5,10 @@ SetWorkingDir %A_ScriptDir%  ; Ensures a consistent starting directory.
 
 #NoEnv
 SendMode Input
-SetWorkingDir %A_ScriptDir%				
-#include %A_ScriptDir%\var.ahk			; Resolve variables
-#include %A_ScriptDir%\lib\func.ahk  	; general function library
-#include %A_ScriptDir%\lib\Acc.ahk 		; can be included for Acc functions
-#include %A_ScriptDir%\resfunc.ahk  	; Resolve function library
+SetWorkingDir, C:\Users\tomba\OneDrive\Desktop\AutoHotKey
+#include %A_WorkingDir%\lib\func.ahk  	; general function library
+#include %A_WorkingDir%\lib\Acc.ahk 		; can be included for Acc functions
+#include %A_WorkingDir%\lib\resfunc.ahk  	; Resolve function library
 #MaxHotkeysPerInterval 120				; mostly for FASTSCROLL
 #SingleInstance Force
 

@@ -62,7 +62,7 @@ return
 		send {{}^{v}{enter}{}}							
 		}
 	else {
-		send {{}{enter}{tab}{enter}{}}{up}
+		send {enter}{{}{enter}{tab}{enter}{backspace}{}}{up}{right}
 		}
 	clipboard := saved
 	saved := ""

@@ -1,4 +1,4 @@
-﻿#NoEnv
+﻿#NoEnv+++++-++
 SendMode Input
 SetWorkingDir %A_ScriptDir%				
 #include %A_ScriptDir%\var.ahk			; Resolve variables
@@ -8,6 +8,7 @@ SetWorkingDir %A_ScriptDir%
 #include %A_ScriptDir%\GoSubG600.ahk
 #MaxHotkeysPerInterval 120				; mostly for FASTSCROLL
 #SingleInstance Force
+#InstallKeybdHook
 
 
 
@@ -52,48 +53,62 @@ menu, testmenu, show
 return 
 
 
+;--------------------------------------- shift space raz tartarus play button
 
++space::
+	if Winactive("ahk_exe resolve.exe") 
+		send {space} 
+	else
+		send {Media_Play_Pause}
+return
+	
+		
+		
+		
+		
+		
+		      
 ;-------------------------------------Qmode
 
-$\::
-	if Winactive("ahk_exe resolve.exe") {
-	page := pageacc()
-	coordmode tooltip screen
-	tooltip % page, calpix.fux-50, 1,2
-	Keywait, \, t0.3
-	if errorlevel {
-		gosub Qboxes
-		keywait \
-		Box_Hide()
-		Gui, 96: Show, % "x" 1100 " y" 0 " w" 70 " h" 20 " NA"
-		}
-	else {
-		Qmode:= (1-Qmode)**2
-		if (Qmode=1){
-			gosub Qboxes
-			Box_Hide()
-			Gui, 96: Show, % "x" 1080 " y" 0 " w" 70 " h" 20 " NA", Qbox
-			}
-		else {
-		Box_Destroy()
-		}
-	}
-	if (Qmode=0)
-		Box_Destroy()
-		}
-	else 
-		send \
-Return
+; $\::
+	; if Winactive("ahk_exe resolve.exe") {
+	; page := pageacc()
+	; coordmode tooltip screen
+	; tooltip % page, calpix.fux-50, 1,2
+	; Keywait, \, t0.3
+	; if errorlevel {
+		; gosub Qboxes
+		; keywait \
+		; Box_Hide()
+		; Gui, 96: Show, % "x" 1100 " y" 0 " w" 70 " h" 20 " NA"
+		; }
+	; else {
+		; Qmode:= (1-Qmode)**2
+		; if (Qmode=1){
+			; gosub Qboxes
+			; Box_Hide()
+			; Gui, 96: Show, % "x" 1080 " y" 0 " w" 70 " h" 20 " NA", Qbox
+			; }
+		; else { 
+		; Box_Destroy()
+		; }
+	; }
+	; if (Qmode=0)
+		; Box_Destroy()
+		; }
+	; else 
+		; send \
+; Return
 
-$+\::
-	if Winactive("ahk_exe resolve.exe") {
-		Box_Destroy()
-		gosub Qreset
-		Qmode:=0
-		}
-	else 
-		send +\
-Return
+; $+\::
+	; if Winactive("ahk_exe resolve.exe") {
+		; Box_Destroy()
+		; gosub Qreset
+		; Qmode:=0
+		; }
+	; else 
+		; send +\
+; Return
 
 
 
@@ -141,6 +156,7 @@ $AppsKey::
 		If (p = "0") 	{
 			Gui, 96:  Hide
 			tooltip,,,,2
+			
 			}
 		Else  																
 			run, C:\Program Files\AutoHotkey\WindowSpy.ahk		
@@ -159,31 +175,6 @@ Return
 	tooltip % page, calpix.fux-50, 1,2
 return
 
-;------------------------------------- appskey number select prim monitor
-
-AppsKey & Numpad1::
-	page :=	pageacc()
-	WinGet, hWnd, ID, A
-	oAcc := Acc_Get("Object", "4.1.13", 0, "ahk_id " hWnd)
-	oAcc.accDoDefaultAction(0)
-	oAcc := Acc_Get("Object", "4.1.13.1.9", 0, "ahk_id " hWnd)
-	oAcc.accDoDefaultAction(0)	
-	oAcc := Acc_Get("Object", "4.1.13.1.9.1.1", 0, "ahk_id " hWnd)
-	oAcc.accDoDefaultAction(0)	
-	oAcc := ""
-return
-
-AppsKey & Numpad2::
-	page :=	pageacc()
-	WinGet, hWnd, ID, A
-	oAcc := Acc_Get("Object", "4.1.13", 0, "ahk_id " hWnd)
-	oAcc.accDoDefaultAction(0)
-	oAcc := Acc_Get("Object", "4.1.13.1.9", 0, "ahk_id " hWnd)
-	oAcc.accDoDefaultAction(0)	
-	oAcc := Acc_Get("Object", "4.1.13.1.9.1.2", 0, "ahk_id " hWnd)
-	oAcc.accDoDefaultAction(0)	
-	oAcc := ""
-return
 
 
 ;------------------------------------- transparent    -  probably change key
@@ -249,6 +240,7 @@ WheelDown::
 return
 
 
+
 +^0::												; reset vars and toggle fast scroll 	
 	start:=A_TickCount
 	diff=5000										; reset all (except qmod?)
@@ -273,13 +265,27 @@ return
 return
 
 
+#if (WinActive("ahk_exe Resolve.exe") && (page="cut"))
+
+WheelUp:: 
+	send {pgup}
+Return
+
+WheelDown:: 
+	send {pgdn}
+Return
+
+end::
+	send !{end}
+Return
+
 #if
 
 
 ;-------------------------------------------------------	 ! Wheel 			skips ahead youtube
 
 $!WheelUp::
-	if WinActive("ahk_exe chrome.exe") 
+	if (WinActive("ahk_exe chrome.exe") || WinActive("ahk_exe vivaldi.exe")) 
 		Sendinput {left}
 	else if WinActive("ahk_exe spotify.exe")
 		send +{left}	
@@ -291,7 +297,7 @@ Return
 
 
 $!WheelDown::
-	if WinActive("ahk_exe chrome.exe") 
+	if (WinActive("ahk_exe chrome.exe") || WinActive("ahk_exe vivaldi.exe")) 
 		Sendinput {right}
 	else if WinActive("ahk_exe spotify.exe")
 		send +{right}
@@ -308,7 +314,7 @@ Return
 $+wheelup::
 	if WinActive("ahk_exe resolve.exe") 
 		send +{wheelup}
-	else if (WinActive("ahk_exe chrome.exe") || WinActive("ahk_exe rawtherapee.exe")) 
+	else if (WinActive("ahk_exe chrome.exe") || WinActive("ahk_exe vivaldi.exe") || WinActive("ahk_exe rawtherapee.exe")) 
 		send +{wheelup}
 	else
 		send {wheelleft}
@@ -318,7 +324,7 @@ Return
 $+wheeldown::
 	if WinActive("ahk_exe resolve.exe")
 		send +{wheeldown}
-	else if (WinActive("ahk_exe chrome.exe") || WinActive("ahk_exe rawtherapee.exe"))
+	else if (WinActive("ahk_exe chrome.exe") || WinActive("ahk_exe vivaldi.exe") || WinActive("ahk_exe rawtherapee.exe"))
 		send +{wheeldown}
 	else
 		send {wheelright}
@@ -384,8 +390,12 @@ if WinActive("ahk_exe notepad++.exe")
 	send +{f7}
 return
 
+^home::														; switch monitors back
+	send ^#w
+return
+
 $end::
-	keywait end, t.3
+	keywait end, t.5
 	
 	if errorlevel {
 		SendMessage,0x112,0xF170,2,,Program Manager
@@ -400,6 +410,11 @@ $end::
 	keywait end
 Return
 
+^end::														; switch monitors forward
+	send ^#x
+return
+
+
 !end::
 if WinActive("ahk_exe notepad++.exe") 
 	send +{f8}
@@ -412,13 +427,21 @@ return
 		send !^0
 return
 
+; WheelRight::
+	; send {f5}
+; Return
+
+; WheelLeft::
+	; send {f6}
+; Return
+
 
 ; o o o o o o o o o o o o o o o        SCROLLMOD        	G7       o o o o o o o o o o o o o o o
 
 Scrolllock::
-	if (A_thishotkey!=A_priorhotkey || A_timesincepriorhotkey>300) {
+	if (A_thishotkey!=A_priorhotkey || A_timesincepriorhotkey>400) {
 		if (heldf21!=1)					;g11 trick: get rid of the click
-			Send {Lbutton down}
+			Send !{Lbutton down}
 		Coordmode, mouse, screen
 		If (scrollmod=0) 
 			MouseGetPos, tweakx, tweaky
@@ -463,7 +486,17 @@ Return
 	tooltip ▲`n▼	
 Return
 
+#if WinActive("ahk_exe vivaldi.exe")
+													;     tab stack in Vivaldi with !Mclick
+!Mbutton::
+	send {Mbutton}
+	sleep 100
+	send ^,        	; shortcut for a command chain in viv
+return
+	
+	
 
+#if
 
 
 ;ooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo
@@ -494,7 +527,7 @@ Return
 
 
 $XButton2::
-	if WinActive("ahk_exe chrome.exe") {
+	if (WinActive("ahk_exe chrome.exe") || WinActive("ahk_exe vivaldi.exe")) {
 		p := Morse()
 		If (p = "0"){
 			Sendinput ^t
@@ -504,7 +537,26 @@ $XButton2::
 			}
 		}
 	else if WinActive("ahk_exe resolve.exe") {
-		send {f1}
+		if (page="cut") {
+			mousegetpos skipx, skipy
+			
+			t1:=A_TickCount, X:=Y:=""
+
+			Text:="|<>*60$22.zzzyGGGTzzzzzzy804SjzLubxTeTpyjbLuyBTfMpyjzLW017zzzzzzzYYYbzzzs"
+
+			if (ok:=FindText(777-150000, 66-150000, 777+150000, 66+150000, 0, 0, Text))
+				{
+				CoordMode, Mouse
+				X:=ok.1.x, Y:=ok.1.y, Comment:=ok.1.id
+				Click, %X%, %Y%
+				}
+			mousemove skipx, skipy
+			 for i,v in ok
+			   if (i<=2)
+				 FindText.MouseTip(ok[i].x, ok[i].y)
+			
+			}
+		send a
 		Keywait, XButton2, t0.3
 			if errorlevel {		
 				gosub movetoruler	
@@ -590,64 +642,94 @@ Return
 ; Return
 
 
-;-------------------------------------------------------	g10     mouse: selects title bar in chrome, up one folder windows exp
+;-------------------------------------------------------	button2           held = vol control; click is full screen in browser, folder up in exp, slip mode resolve  
 
-$f20::
-	if WinActive("ahk_exe chrome.exe") {
-		Keywait, f20, t0.25
-		if errorlevel {
-			heldf20 := 1
-			choosebook := true
-			send {f6 3}
-			}
-		else
+$f20 up::
+	if (cancelf20 = 1)
+		cancelf20 := 0
+	else 
+	{	
+		if (WinActive("ahk_exe chrome.exe") || WinActive("ahk_exe vivaldi.exe")) {
 			send {f11}
-		Keywait, f20
-		}
-	else if WinActive("ahk_exe explorer.exe") 
-		Sendinput !{up}
-	else if WinActive("ahk_exe notepad++.exe") 	
-		Send {f11}
-	else if WinActive("ahk_exe resolve.exe") {							
-			Keywait, f20, t0.3
-			if errorlevel {
-				skip := GetCursorPos()												;seems to work better than MouseGetPos
-				if WinActive("Secondary Screen") 
-					gosub overkill
-				DllCall("SetCursorPos", "int", 10, "int", 54) 						;setcursorpos doesn't work properly from second screen
-				DllCall("SetCursorPos", "int", calpix.fax, "int", calpix.mey) 
-				; Mousemove calpix.fax, calpix.mey		
-				heldf20 := 1
-				choosepage:=true
-				buttonskipper := (calpix.rex - calpix.mex)/6
-				}
-			else	
-				Sendinput {f20}		
-			Keywait f20
 			}
-	
+		else if WinActive("ahk_exe explorer.exe") 
+			Sendinput !{up}
+		else if WinActive("ahk_exe notepad++.exe") 	
+			Send {f11}
+		else if WinActive("ahk_exe resolve.exe") 							
+			Sendinput {f20}
+	}
 Return
 
-f20 up::
-	if WinActive("ahk_exe resolve.exe") {
-		if (heldf20=1) {
-			MouseClick 
-			mouseclick,,1000,3
-			Mousemove, skip.x, skip.y
-			heldf20:=0
-			choosepage:=false
-			SetTitleMatchMode 2
-			sleep 100
-			WinActivate %davinci%
-			page := pagecheck(calpix)
-			if (page = "") 
-				gosub overkill
-			sleep 200
-			if WinActive("Secondary Screen")
-				gosub underkill	
-			}
-		}
-return	
+f20 & wheelup::
+	send {Volume_Up 6}
+	cancelf20 := 1
+return
+
+f20 & wheeldown::
+	send {Volume_Down 6}
+	cancelf20 := 1
+return
+
+
+;-------------------------------------------------------	g10     DEPR      mouse: selects title bar in chrome, up one folder windows exp, broken something in resolve
+
+; $f20::
+	; if (WinActive("ahk_exe chrome.exe") || WinActive("ahk_exe vivaldi.exe")) {
+		; Keywait, f20, t0.25
+		; if errorlevel {
+			; heldf20 := 1
+			; choosebook := true
+			; send {f6 3}
+			; }
+		; else
+			; send {f11}
+		; Keywait, f20
+		; }
+	; else if WinActive("ahk_exe explorer.exe") 
+		; Sendinput !{up}
+	; else if WinActive("ahk_exe notepad++.exe") 	
+		; Send {f11}
+	; else if WinActive("ahk_exe resolve.exe") {							
+			; Keywait, f20, t0.3
+			; if errorlevel {
+				; skip := GetCursorPos()												;seems to work better than MouseGetPos
+				; if WinActive("Secondary Screen") 
+					; gosub overkill
+				; DllCall("SetCursorPos", "int", 10, "int", 54) 						;setcursorpos doesn't work properly from second screen
+				; DllCall("SetCursorPos", "int", calpix.fax, "int", calpix.mey) 
+				; ; Mousemove calpix.fax, calpix.mey		
+				; heldf20 := 1
+				; choosepage:=true
+				; buttonskipper := (calpix.rex - calpix.mex)/6
+				; }
+			; else	
+				; Sendinput {f20}		
+			; Keywait f20
+			; }
+	
+; Return
+
+; f20 up::
+	; if WinActive("ahk_exe resolve.exe") {
+		; if (heldf20=1) {
+			; MouseClick 
+			; mouseclick,,1000,3
+			; Mousemove, skip.x, skip.y
+			; heldf20:=0
+			; choosepage:=false
+			; SetTitleMatchMode 2
+			; sleep 100
+			; WinActivate %davinci%
+			; page := pagecheck(calpix)
+			; if (page = "") 
+				; gosub overkill
+			; sleep 200
+			; if WinActive("Secondary Screen")
+				; gosub underkill	
+			; }
+		; }
+; return	
 
 ;-------------------------------------------------------	!g10    cycle color tools
 
@@ -720,7 +802,7 @@ $f21::
 			else {
 				send +q 
 				sleep 10
-				send +3
+				send +4
 				page := "edit"
 				SetTitleMatchMode 2
 				sleep 100
@@ -891,7 +973,7 @@ $f22::
 		}
 	else if WinActive("ahk_exe notepad++.exe")	
 		sendinput ^k
-	else if (WinActive("ahk_exe chrome.exe") || WinActive("ahk_exe explorer.exe")) {
+	else if (WinActive("ahk_exe chrome.exe") || WinActive("ahk_exe vivaldi.exe") || WinActive("ahk_exe explorer.exe")) {
 		keywait, f22, t.3 											;ripple delete during playback. not perfect
 		if errorlevel {
 			skip := GetCursorPos()
@@ -1012,7 +1094,7 @@ Return
 
 ;---------------------------------------------------		!g14	 close tab
 $!f24::
-	if WinActive("ahk_exe chrome.exe")
+	if (WinActive("ahk_exe chrome.exe") || WinActive("ahk_exe vivaldi.exe"))
 		Sendinput l
 	Else
 		Sendinput !{f24}
@@ -1036,22 +1118,24 @@ XButton1::
 			wheelarrow:=true
 			tooltip WIN	
 			}
-		else if (a_thishotkey=a_priorhotkey && a_timesincepriorhotkey<300)
+		else if (a_thishotkey=a_priorhotkey && a_timesincepriorhotkey<500)
 			send #d
 		else
 			Send {rwin}
 	keywait XButton1
 	send {alt up}
+	tooltip
 return
 
 
 ;------------------------------------------------------		!g18yu	 !click:scroll through windows;  long !click: see available windows    
 
 ^XButton1::
-	send !{f4}
+	send #d
 return
 
 #if wheelarrow
+
 
 ~lbutton::											;scaramanzia	
 	wheelarrow:=false
@@ -1179,19 +1263,31 @@ Return
 
 
 
-;------------------------------------------------------------ !G20 mouse launch Chrome / cycle Chrome tabs
+; ;------------------------------------------------------------ !G20 mouse launch Chrome 
+; !Ins::
+	; ; DetectHiddenWindows On  ; Allows a script's hidden main window to be detected.
+	; ; SetTitleMatchMode 2  ; Avoids the need to specify the full path of the file below.
+	; ; PostMessage, 0x0111, 65303,,, fastscroll.ahk - AutoHotkey
+	; IfWinNotExist, ahk_exe chrome.exe
+		; Run, chrome.exe
+	; if WinActive("ahk_exe chrome.exe")
+		; WinMinimize, a
+	; else
+		; WinActivate ahk_exe chrome.exe
+; Return
+
+;------------------------------------------------------------ !G20 mouse launch Vivaldi 
 !Ins::
 	; DetectHiddenWindows On  ; Allows a script's hidden main window to be detected.
 	; SetTitleMatchMode 2  ; Avoids the need to specify the full path of the file below.
 	; PostMessage, 0x0111, 65303,,, fastscroll.ahk - AutoHotkey
-	IfWinNotExist, ahk_exe chrome.exe
-		Run, chrome.exe
-	if WinActive("ahk_exe chrome.exe")
+	IfWinNotExist, ahk_exe vivaldi.exe
+		Run, vivaldi.exe
+	if WinActive("ahk_exe vivaldi.exe")
 		WinMinimize, a
 	else
-		WinActivate ahk_exe chrome.exe
+		WinActivate ahk_exe vivaldi.exe
 Return
-
 
 
 
@@ -1474,7 +1570,7 @@ return
 	if (heldf20=1) {
 		heldf20:=0
 		choosebook:=false
-		if WinActive("ahk_exe chrome.exe")
+		if (WinActive("ahk_exe chrome.exe") || WinActive("ahk_exe vivaldi.exe"))
 			send {enter}
 		}
 return	
@@ -1573,7 +1669,15 @@ return
 
 
 
+#if (WinActive("ahk_exe Resolve.exe") && (page="cut"))
 
+PgUp:: 
+	send +{pgup}
+Return
+
+PgDn:: 
+	send +{pgdn}
+Return
 
 
 
@@ -1581,34 +1685,104 @@ return
 
 #if
 
+;                                                                                           ; BUTTON above D pad on Razer Tartarus
+
+; +^!=::
+	; if WinActive("ahk_exe chrome.exe") 
+	; {																						;Language Reactor tool to skip around captions. uses pgup,pgdn,appskey
+		; hwndChrome := WinExist("ahk_class Chrome_WidgetWin_1")								;magic that finds current url
+		; AccChrome := Acc_ObjectFromWindow(hwndChrome)
+		; AccAddressBar := GetElementByName(AccChrome, "Address and search bar")				;spits out current url
+		; ; msgbox % AccAddressBar.accValue(0)
+		; ytpos := instr( AccAddressBar.accValue(0), "netflix.com")							;finds needle "netflix.com" in haystack "accaddress..."
+		; ; msgbox % ytpos
+		; if (ytpos > 0)
+		; {	
+			; capwheel := 1
+			; Gui, 96: +ToolWindow -Caption +AlwaysOnTop +LastFound
+			; Gui, 96: Color, ff0000
+			; Gui, 96: Show, % "x" 0 " y" 1050 " w" 10 " h" 10 " NA"
+		; }
+		; else
+		; {
+			; capwheel := 0
+			; Gui, 96:  Hide
+		; }
+	; }
+	; else 
+	; {
+		; capwheel := 0
+		; Gui, 96:  Hide
+	; }
+; Return
+
++^!=::
+	if WinActive("ahk_exe vivaldi.exe") 
+	{																						;Language Reactor tool to skip around captions. uses pgup,pgdn,appskey
+		if winactive("Netflix - Vivaldi")
+		{	
+			capwheel := 1
+			Gui, 96: +ToolWindow -Caption +AlwaysOnTop +LastFound
+			Gui, 96: Color, ff0000
+			Gui, 96: Show, % "x" 0 " y" 1050 " w" 10 " h" 10 " NA"
+		}
+		else
+		{
+			capwheel := 0
+			Gui, 96:  Hide
+		}
+	}
+	else 
+	{
+		capwheel := 0
+		Gui, 96:  Hide
+	}
+Return
+
+
+#if (capwheel = 1) && (WinActive("ahk_exe chrome.exe") || WinActive("ahk_exe vivaldi.exe"))
+
+pgup::
+	if (A_timesincepriorhotkey<500)
+		send a
+	else
+		send s
+return
+
+pgdn::
+	send d
+return
+
+#if
+
 ; o o o o o o o o o o o o o o o o    KEYS   o o o o o o o o o o o o o o o o
 
 ;-----------------------------------G01  -  Buggy with modifiers for some reason...
 	
-$Backspace::
-	if WinActive("ahk_exe resolve.exe") {
-	KeyWait, backspace, T.07
-	If ErrorLevel {
-		sleepadd++											;equation to machinegun bs faster upon holding. still too slow... what holds it back? t0.7! fix with gosub??
-		sleepvar := 100/(sleepadd*sleepadd)
-		tooltip % sleepvar
-		Send {backspace}
-		Sleep % sleepvar
-		}
-	}
-	else 
-		send {backspace}
+; $Backspace::
+	; if WinActive("ahk_exe resolve.exe") {
+	; KeyWait, backspace, T.07
+	; If ErrorLevel {
+		; sleepadd++											;equation to machinegun bs faster upon holding. still too slow... what holds it back? t0.7! fix with gosub??
+		; sleepvar := 100/(sleepadd*sleepadd)
+		; tooltip % sleepvar
+		; Send {backspace}
+		; Sleep % sleepvar
+		; }
+	; }
+	; else 
+		; send {backspace}
 	
-Return
+; Return
 
-Backspace up::
-	if WinActive("ahk_exe resolve.exe") {
-	KeyWait, backspace
-	sleepadd := 0
-	Sleep 100
-	tooltip
-	}
-return
+; Backspace up::
+	; if WinActive("ahk_exe resolve.exe") {
+	; KeyWait, backspace
+	; sleepadd := 0
+	; Sleep 100
+	; tooltip
+	; }
+; return
 
 $Delete::
 	Send {delete}
@@ -2616,4 +2790,65 @@ f15::
 return
 
 #if
+
+;         00         00                    00                            
+;          0                0               0                            
+; 000  000 00000    000    00000    0000    0 0000  0000   00  000  00000
+;  0    0  00  00    00     0      0    0   0 00   0    0   0   0  00   0
+;  0 00 0  0    0    00     0      000000   000    000000   0   0   0000 
+;  0 00 0  0    0    00     0      0        000    0         0 0        0
+;   0  0   0    0    00     0   0  00       0  0   00        000   0    0
+;   0  0  000  000 000000    000    00000  00 0000  00000     0    00000 
+;                                                             0          
+;                                                          0000          
+
+
+SC073:: 												; 1
+; MsgBox, %A_ThisHotkey% was pressed.	
+	if winactive("Netflix - Vivaldi")
+		send {d} 
+	else 
+		send {right}
+return
+
+SC070:: 												; 2
+; MsgBox, %A_ThisHotkey% was pressed.
+	if winactive("Netflix - Vivaldi")
+		send {s}
+	else 
+		send {space}
+return
+
+SC07D:: 												; 3
+; MsgBox, %A_ThisHotkey% was pressed.
+	if winactive("Netflix - Vivaldi")
+		send {a}
+	else 
+		send {left}
+return
+
+SC079:: 												; 4
+; MsgBox, %A_ThisHotkey% was pressed.
+return
+
+SC07B:: 												; 5
+; MsgBox, %A_ThisHotkey% was pressed.
+	; IfWinNotExist, ahk_exe Telegram.exe
+			; Run, "C:\Users\tomba\OneDrive\Desktop\Telegram.lnk"
+		; else if WinActive("ahk_exe Telegram.exe")
+			; WinMinimize, a
+		; else
+			; WinActivate ahk_exe Telegram.exe
+return
+
+SC05C::  												; 6
+	send {space} 
+return
+
+
+;-----------------------
+
+SC071::
+	MsgBox, %A_ThisHotkey% was pressed.
+return
 

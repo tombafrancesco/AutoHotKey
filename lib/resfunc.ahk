@@ -1,9 +1,10 @@
 ﻿#NoEnv
 SendMode Input
-SetWorkingDir %A_ScriptDir%				
-#include %A_ScriptDir%\var.ahk			; Resolve variables
-#include %A_ScriptDir%\lib\func.ahk  	; general function library
-#include %A_ScriptDir%\lib\Acc.ahk 		; can be included for Acc functions
+SetWorkingDir, C:\Users\tomba\OneDrive\Desktop\AutoHotKey			
+#include C:\Users\tomba\OneDrive\Desktop\AutoHotKey\lib\func.ahk  	; general function library
+#include C:\Users\tomba\OneDrive\Desktop\AutoHotKey\lib\Acc.ahk 		; can be included for Acc functions
+#include C:\Users\tomba\OneDrive\Desktop\AutoHotKey\lib\resfunc.ahk  	; Resolve function library
+#include C:\Users\tomba\OneDrive\Desktop\AutoHotKey\GoSub1.ahk
 #MaxHotkeysPerInterval 120				; mostly for FASTSCROLL
 #SingleInstance Force
 

@@ -12,8 +12,8 @@ GetElementByName(AccObj, name) {									;function for URL retrieval in chrome
          return obj
 }
 
-; numpad0::
-	; hwndChrome := WinExist("ahk_class Chrome_WidgetWin_1")								;magic that searches for "youtube.com" in current url
+; numpad0::																					;magic that searches for "youtube.com" in current url
+	; hwndChrome := WinExist("ahk_class Chrome_WidgetWin_1")								
 	; AccChrome := Acc_ObjectFromWindow(hwndChrome)
 	; AccAddressBar := GetElementByName(AccChrome, "Address and search bar")				;spits out current url
 	; msgbox % AccAddressBar.accValue(0)
@@ -23,7 +23,7 @@ GetElementByName(AccObj, name) {									;function for URL retrieval in chrome
 
 ;---------------------------------------------------------------------------------------------
 
-Morse(timeout = 250) { 
+Morse(timeout = 350) { 
    tout := timeout/1000
    key := RegExReplace(A_ThisHotKey,"[\*\~\$\#\+\!\^]")
    Loop {
